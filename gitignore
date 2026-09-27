@@ -1,0 +1,18 @@
+# OS cruft
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Netlify local
+.netlify/
+
+# Duplicate files created by browser downloads
+*" ("*").html"
+*(1).html
+*(2).html
+*(3).html

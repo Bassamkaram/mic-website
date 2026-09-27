@@ -1,0 +1,8 @@
+# robots.txt for mic-lb.com
+# All search engine crawlers welcome.
+
+User-agent: *
+Allow: /
+
+# Sitemap location for efficient crawling
+Sitemap: https://mic-lb.com/sitemap.xml

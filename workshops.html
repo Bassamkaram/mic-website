@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#183D31" />
+<title>Workshops — Metn Innovation Campus</title>
+<meta name="description" content="Short, hands-on workshops at MIC — product, growth, fundraising, operations, brand, and sales. Led by practitioners, built for founders and growing teams." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="arr" viewBox="0 0 16 16"><path d="M 4 12 L 12 4 M 6 4 L 12 4 L 12 10" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="close" viewBox="0 0 16 16"><path d="M 4 4 L 12 12 M 12 4 L 4 12" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="M 5 12 L 10 17 L 19 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+    <!-- Workshop theme icons -->
+    <symbol id="w-product" viewBox="0 0 28 28"><rect x="4" y="6" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M4 11h20M9 16h4M16 16h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="w-growth" viewBox="0 0 28 28"><path d="M4 22l6-6 4 4 8-10M16 10h6v6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="w-fund" viewBox="0 0 28 28"><path d="M14 4v20M9 8c0-2 2-3 5-3s5 1 5 3-2 3-5 3-5 1-5 3 2 3 5 3 5-1 5-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="w-ops" viewBox="0 0 28 28"><circle cx="14" cy="14" r="3.5" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M14 3v3M14 22v3M3 14h3M22 14h3M6 6l2.5 2.5M19.5 19.5L22 22M6 22l2.5-2.5M19.5 8.5L22 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="w-brand" viewBox="0 0 28 28"><path d="M14 4l3.5 7 7.5 1-5.5 5.5 1.5 7.5L14 21l-6.5 4 1.5-7.5L3.5 12l7.5-1L14 4z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="w-sales" viewBox="0 0 28 28"><path d="M4 7h20l-2 12H6L4 7zM4 7l-2-3H1M9 13h10M11 22h2M16 22h2" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav-wrap">
+  <nav class="nav" aria-label="Main">
+    <a href="index.html" class="nav-brand"><img src="mic-lockup-horizontal.png" alt="Metn Innovation Campus — MIC"/></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <div class="nav-item nav-item--has-dropdown">
+        <a href="programs.html">Programs<svg class="nav-caret" width="9" height="6" viewBox="0 0 9 6" aria-hidden="true"><path d="M1 1l3.5 4L8 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <div class="nav-dropdown" role="menu">
+          <div class="nav-dropdown-inner">
+            <a href="programs.html#pre-incubation" role="menuitem">Pre-incubation</a>
+            <a href="programs.html#incubation" role="menuitem">Incubation</a>
+            <a href="programs.html#acceleration" role="menuitem">Acceleration</a>
+          </div>
+        </div>
+      </div>
+      <a href="services.html">Services</a>
+      <a href="events.html">Events</a>
+      <a href="workshops.html" class="active">Workshops</a>
+      <a href="blog.html">Blog</a>
+      <a href="about.html">About us</a>
+      <a href="contact.html">Contact us</a>
+    </div>
+    <div class="nav-cta">
+      <button class="nav-tour" data-modal="modal-tour" aria-label="Take a virtual tour">
+        <span class="dot" aria-hidden="true"></span>
+        Virtual tour
+      </button>
+      <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <a href="index.html">Home</a>
+  <a href="programs.html">Programs</a>
+  <a href="programs.html#pre-incubation" class="sub">Pre-incubation</a>
+  <a href="programs.html#incubation" class="sub">Incubation</a>
+  <a href="programs.html#acceleration" class="sub">Acceleration</a>
+  <a href="services.html">Services</a>
+  <a href="events.html">Events</a>
+  <a href="workshops.html">Workshops</a>
+  <a href="blog.html">Blog</a>
+  <a href="about.html">About us</a>
+  <a href="contact.html">Contact us</a>
+  <div class="mobile-actions">
+    <button class="btn btn--ghost" data-modal="modal-tour">Virtual tour</button>
+  </div>
+</div>
+
+<!-- Page header -->
+<section class="page-header">
+  <div class="container reveal">
+    <span class="eyebrow"><span class="num">→</span> Workshops</span>
+    <h1>Short, hands-on,<br/><em>built to be useful</em>.</h1>
+    <p>
+      One to two-day sessions led by practitioners who've shipped what they're teaching.
+      Workshops at MIC are designed for founders, freelancers, and growing teams who need a
+      specific skill to land in a specific week &mdash; not a semester from now.
+    </p>
+  </div>
+</section>
+
+<!-- Workshops grid -->
+<section class="section">
+  <div class="container">
+    <div class="services-grid">
+
+      <!-- Product & Strategy -->
+      <article class="service-card reveal" id="product">
+        <div class="s-ico"><svg><use href="#w-product"/></svg></div>
+        <h3>Product &amp; Strategy</h3>
+        <p>
+          From a vague idea to a defensible product bet. Hands-on sessions on customer discovery,
+          roadmapping, and the kind of strategic clarity that survives contact with reality.
+        </p>
+        <ul>
+          <li>Customer discovery &amp; problem validation</li>
+          <li>Roadmapping &amp; prioritization frameworks</li>
+          <li>MVP scoping &amp; build-vs-buy decisions</li>
+          <li>Product-market fit indicators</li>
+          <li>Pricing &amp; packaging fundamentals</li>
+        </ul>
+      </article>
+
+      <!-- Growth & Marketing -->
+      <article class="service-card reveal" id="growth">
+        <div class="s-ico"><svg><use href="#w-growth"/></svg></div>
+        <h3>Growth &amp; Marketing</h3>
+        <p>
+          The mechanics behind real traction. Practical workshops on content, channels, and the
+          experiments that move metrics &mdash; not the ones that just look good in a deck.
+        </p>
+        <ul>
+          <li>Content strategy &amp; SEO foundations</li>
+          <li>Paid acquisition &amp; channel testing</li>
+          <li>Growth experiments &amp; analytics setup</li>
+          <li>Brand voice &amp; messaging hierarchies</li>
+          <li>Funnel analysis &amp; retention tactics</li>
+        </ul>
+      </article>
+
+      <!-- Fundraising -->
+      <article class="service-card reveal" id="fundraising">
+        <div class="s-ico"><svg><use href="#w-fund"/></svg></div>
+        <h3>Fundraising</h3>
+        <p>
+          What a serious round actually looks like. Sessions on pitch craft, term sheets, and
+          the operating habits that make founders investable long before the first conversation.
+        </p>
+        <ul>
+          <li>Pitch deck workshop &amp; live critique</li>
+          <li>Financial modeling for early-stage rounds</li>
+          <li>Term sheets, SAFEs, and convertible notes</li>
+          <li>Investor outreach &amp; relationship building</li>
+          <li>Due diligence preparation</li>
+        </ul>
+      </article>
+
+      <!-- Operations & Scaling -->
+      <article class="service-card reveal" id="operations">
+        <div class="s-ico"><svg><use href="#w-ops"/></svg></div>
+        <h3>Operations &amp; Scaling</h3>
+        <p>
+          The unglamorous machinery behind companies that don't break when they grow. Workshops on
+          hiring, systems, and the operating cadences that turn intention into outcome.
+        </p>
+        <ul>
+          <li>Hiring playbooks &amp; founder-led recruiting</li>
+          <li>OKRs, metrics, and goal-setting frameworks</li>
+          <li>Operating cadences &amp; weekly rhythms</li>
+          <li>Process design &amp; documentation</li>
+          <li>Building a remote-friendly operating model</li>
+        </ul>
+      </article>
+
+      <!-- Brand & Design -->
+      <article class="service-card reveal" id="brand">
+        <div class="s-ico"><svg><use href="#w-brand"/></svg></div>
+        <h3>Brand &amp; Design</h3>
+        <p>
+          Design fundamentals for non-designers and brand strategy for teams who've been winging it.
+          Sessions on identity, UX, and the visual instincts that make products feel considered.
+        </p>
+        <ul>
+          <li>Brand identity foundations &amp; positioning</li>
+          <li>UX/UI fundamentals for non-designers</li>
+          <li>Design systems &amp; component thinking</li>
+          <li>Working effectively with designers</li>
+          <li>Critique &amp; design review craft</li>
+        </ul>
+      </article>
+
+      <!-- Sales & Customer Success -->
+      <article class="service-card reveal" id="sales">
+        <div class="s-ico"><svg><use href="#w-sales"/></svg></div>
+        <h3>Sales &amp; Customer Success</h3>
+        <p>
+          B2B sales fundamentals for founders who've never carried a quota, and customer success
+          patterns for teams trying to keep what they win. Practical, role-played, and direct.
+        </p>
+        <ul>
+          <li>Customer interviews that surface real signal</li>
+          <li>B2B sales motions &amp; deal qualification</li>
+          <li>Discovery calls &amp; objection handling</li>
+          <li>Onboarding &amp; activation playbooks</li>
+          <li>Retention, expansion, and churn diagnostics</li>
+        </ul>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="container section-warm" style="background:var(--bg-warm); padding-block: 56px;">
+  <div class="reveal">
+    <span class="eyebrow"><span class="num">→</span> How it works</span>
+    <h2 style="margin: 14px 0 28px;">Practical, paid, and<br/>built for working schedules.</h2>
+    <div class="card-grid card-grid--3">
+      <div class="info-card">
+        <h3>Format</h3>
+        <p class="info-card__role">One or two days</p>
+        <p>
+          Most workshops run Friday afternoon through Saturday, structured as half-day blocks
+          with hands-on exercises rather than lectures. Cohorts cap at 16 to keep the room conversational.
+        </p>
+      </div>
+      <div class="info-card">
+        <h3>Who teaches</h3>
+        <p class="info-card__role">Working practitioners</p>
+        <p>
+          Workshops are led by operators currently doing the work &mdash; senior product managers, growth
+          marketers, fund partners, and operators from the MIC and partner network.
+        </p>
+      </div>
+      <div class="info-card">
+        <h3>Access</h3>
+        <p class="info-card__role">Members + public</p>
+        <p>
+          MIC members get priority registration and discounted rates. Most workshops are open to the
+          public; some are reserved for active program participants.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="container" style="padding-block: 64px;">
+  <div class="reveal" style="text-align: center; max-width: 640px; margin: 0 auto;">
+    <h2 style="margin-bottom: 16px;">See what's <em>coming up</em>.</h2>
+    <p style="font-size: 16.5px; color: var(--ink-soft); margin-bottom: 26px;">
+      The workshop calendar opens alongside the campus in September. Get the schedule the moment it lands.
+    </p>
+    <div style="display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+      <button class="btn btn--primary" data-modal="modal-tour">Notify me <svg class="arr" width="14" height="14"><use href="#arr"/></svg></button>
+      <a href="contact.html" class="btn btn--ghost">Propose a workshop</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-brand"><img src="mic-icon-white.png" alt="MIC icon"/>Metn Innovation Campus</div>
+        <p>A campus, community and set of programs for people building the next generation of real business leaders from Lebanon.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Explore</h5>
+        <ul>
+          <li><a href="index.html#coworking">Coworking</a></li>
+          <li><a href="index.html#offices">Team Offices</a></li>
+          <li><a href="programs.html">Programs</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="events.html">Events</a></li>
+          <li><a href="workshops.html">Workshops</a></li>
+          <li><a href="blog.html">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Visit</h5>
+        <ul>
+          <li>Jdeideh, Metn</li>
+          <li>Mount Lebanon</li>
+          <li>Mon–Fri · 8:00–20:00</li>
+          <li>Sat · 8:00–14:00</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="mailto:info@mic-lb.com">info@mic-lb.com</a></li>
+          <li><a href="tel:+9611000000">+961 1 000 000</a></li>
+        </ul>
+        <div class="footer-social">
+          <a href="#" rel="noopener" aria-label="Facebook">Facebook</a>
+          <a href="#" rel="noopener" aria-label="Instagram">Instagram</a>
+          <a href="#" rel="noopener" aria-label="LinkedIn">LinkedIn</a>
+          <a href="#" rel="noopener" aria-label="YouTube">YouTube</a>
+          <a href="#" rel="noopener" aria-label="TikTok">TikTok</a>
+          <a href="#" rel="noopener" aria-label="X">X</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Metn Innovation Campus. All rights reserved.</span>
+      <span>Built with <em>♥</em> in Lebanon</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Modals -->
+<div class="modal-backdrop" id="modal-tour" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal">
+    <button class="modal-close" data-modal-close aria-label="Close"><svg width="14" height="14"><use href="#close"/></svg></button>
+    <div class="modal-eyebrow">Workshop calendar · Launching September 2026</div>
+    <h3>Get the schedule, <em>before everyone else</em>.</h3>
+    <p class="modal-desc">We'll send the workshop calendar and registration link the moment it opens.</p>
+    <form>
+      <div class="form-row cols-2">
+        <div class="field"><label>Full name</label><input type="text" name="name" required placeholder="Your name"/></div>
+        <div class="field"><label>Email</label><input type="email" name="email" required placeholder="you@email.com"/></div>
+      </div>
+      <div class="modal-actions"><button type="submit" class="btn btn--primary btn--block">Notify me at launch →</button></div>
+    </form>
+    <div class="modal-success" style="display:none;">
+      <div class="check"><svg width="28" height="28"><use href="#check"/></svg></div>
+      <h3>You're on the list.</h3>
+      <p style="font-size:15px;">We'll send the calendar to your inbox at launch.</p>
+    </div>
+  </div>
+</div>
+
+<script src="scripts.js"></script>
+</body>
+</html>

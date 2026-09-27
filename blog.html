@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1B4332" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18478405754"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-18478405754');
+</script>
+<title>Blog — Metn Innovation Campus</title>
+<meta name="description" content="Notes from the campus on building, raising, and operating companies in Lebanon. Honest writing for founders who've stopped expecting easy." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preload" as="image" href="blog-hero-bg.jpg" fetchpriority="high" />
+<link rel="icon" type="image/png" href="mic-icon-128.png" />
+<link rel="apple-touch-icon" href="mic-icon-128.png" />
+<link rel="stylesheet" href="styles.css" />
+<!-- Plausible Analytics -->
+<script defer data-domain="mic-lb.com" src="https://plausible.io/js/script.js"></script>
+<!-- Structured data: Organization -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "https://mic-lb.com/#mic",
+  "name": "Metn Innovation Campus",
+  "alternateName": "MIC",
+  "url": "https://mic-lb.com",
+  "logo": "https://mic-lb.com/mic-icon-128.png",
+  "email": "info@mic-lb.com"
+}
+</script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="arr" viewBox="0 0 16 16"><path d="M 4 12 L 12 4 M 6 4 L 12 4 L 12 10" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="close" viewBox="0 0 16 16"><path d="M 4 4 L 12 12 M 12 4 L 4 12" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="M 5 12 L 10 17 L 19 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav-wrap">
+  <nav class="nav" aria-label="Main">
+    <a href="index.html" class="nav-brand"><img src="mic-lockup-horizontal.png" alt="Metn Innovation Campus — MIC"/></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <div class="nav-item nav-item--has-dropdown">
+        <a href="programs.html">Programs<svg class="nav-caret" width="9" height="6" viewBox="0 0 9 6" aria-hidden="true"><path d="M1 1l3.5 4L8 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <div class="nav-dropdown" role="menu">
+          <div class="nav-dropdown-inner">
+            <a href="programs.html#pre-incubation" role="menuitem">Pre-incubation</a>
+            <a href="programs.html#incubation" role="menuitem">Incubation</a>
+            <a href="programs.html#acceleration" role="menuitem">Acceleration</a>
+          </div>
+        </div>
+      </div>
+      <a href="services.html">Services</a>
+      <a href="events.html">Events</a>
+      <a href="blog.html" class="active">Blog</a>
+      <a href="about.html">About us</a>
+    </div>
+    <div class="nav-cta">
+      <button class="nav-tour" data-modal="modal-tour" aria-label="Take a virtual tour">
+        <span class="dot" aria-hidden="true"></span>
+        Virtual tour
+      </button>
+      <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <a href="index.html">Home</a>
+  <a href="programs.html">Programs</a>
+  <a href="programs.html#pre-incubation" class="sub">Pre-incubation</a>
+  <a href="programs.html#incubation" class="sub">Incubation</a>
+  <a href="programs.html#acceleration" class="sub">Acceleration</a>
+  <a href="services.html">Services</a>
+  <a href="events.html">Events</a>
+  <a href="blog.html">Blog</a>
+  <a href="about.html">About us</a>
+  <div class="mobile-actions">
+    <button class="btn btn--ghost" data-modal="modal-tour">Virtual tour</button>
+  </div>
+</div>
+
+<!-- Page header (banner with photo + overlay, matches homepage hero pattern) -->
+<section class="page-banner page-banner--blog">
+  <div class="container reveal">
+    <span class="eyebrow"><span class="num">→</span> Blog</span>
+    <h1>Notes from the campus<br/>on <em>building in Lebanon</em>.</h1>
+    <p>
+      Honest writing for founders who've stopped expecting easy. No motivational fluff &mdash; just what we and the people around us have learned the hard way.
+    </p>
+  </div>
+</section>
+
+<!-- Posts -->
+<section class="section" id="blog-list-section" style="padding:48px 0;">
+  <div class="container">
+    <div class="blog-list">
+
+      <!-- Post 1 -->
+      <article class="blog-post blog-post--collapsible reveal">
+        <div class="meta">
+          <span class="tag">Ecosystem</span>
+          <span class="dot">·</span>
+          <span>5 min read</span>
+          <span class="dot">·</span>
+          <span>May 2026</span>
+        </div>
+        <h2>Lebanon's diaspora is the <em>secret weapon</em> nobody quite knows how to use.</h2>
+        <p class="lede">There are roughly fifteen million Lebanese living outside Lebanon. There are fewer than five million inside it.</p>
+        <div class="body" id="blog-body-1" hidden>
+          <p>The diaspora is, mathematically, the country. We should start building like it.</p>
+          <p>Walk into any tech hub from São Paulo to Singapore, Lagos to Los Angeles, and you'll find a Lebanese name on a senior nameplate. Engineers at Google, partners at Sequoia, founders of Series C startups, professors at INSEAD. They built the careers we read about. Then they kept them.</p>
+          <p>What's strange is how little their networks, capital, and operating knowledge flow back. Not because the diaspora doesn't care &mdash; most care deeply &mdash; but because nobody on the ground has built a credible interface. The mechanism for a Lebanese-American product leader to spend two hours a month helping a Beirut founder simply doesn't exist. So they help when asked, awkwardly, in ad-hoc ways, and the rest gets lost.</p>
+          <p>The institutions that should bridge this gap have mostly failed at it. Government programs are noisy and untrusted. University alumni networks are warm but professionally underbuilt. Investment vehicles aimed at the diaspora have come and gone, usually because they couldn't show enough deal flow to justify the wire.</p>
+          <p>The opportunity is to build a permanent, productive interface. Not another conference or LinkedIn group &mdash; a place where serious people can give serious time, on terms that respect both their schedule and the founder's stage. A campus, a roster of vetted companies, structured engagement formats: office hours, advisory roles, syndicate checks.</p>
+          <p>The diaspora isn't a marketing asset. It's an operating asset. We should treat it like one.</p>
+        </div>
+        <div class="blog-post-actions">
+          <button class="btn btn--ghost btn--sm blog-toggle" type="button" aria-expanded="false" aria-controls="blog-body-1">
+            Read more <svg class="ws-chev" width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><path d="M2 4l3.5 3.5L9 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <p class="by">— The MIC editorial team</p>
+        </div>
+      </article>
+
+      <!-- Post 2 -->
+      <article class="blog-post blog-post--collapsible reveal">
+        <div class="meta">
+          <span class="tag">Operating</span>
+          <span class="dot">·</span>
+          <span>4 min read</span>
+          <span class="dot">·</span>
+          <span>April 2026</span>
+        </div>
+        <h2>Building in Lebanon: <em>five things</em> the last five years taught us.</h2>
+        <p class="lede">If you've shipped product in Lebanon between 2019 and 2024, you've earned a graduate degree in operational improvisation.</p>
+        <div class="body" id="blog-body-2" hidden>
+          <p>Here's the syllabus, in five lessons.</p>
+          <p><strong>One:</strong> Cash is not a strategy, but it is oxygen. Founders who survived kept enough fresh USD on hand to operate for at least six months without revenue. Those who didn't, learned the hard way that banking restrictions are not theoretical.</p>
+          <p><strong>Two:</strong> Hire for resilience, not just resume. The most valuable people on a Lebanese team between 2019 and 2024 weren't the highest pedigree &mdash; they were the ones who showed up when the road was closed, the power was out, the salary was late, and the country was on television for the wrong reasons.</p>
+          <p><strong>Three:</strong> Build for the region, sell to the region, take payment from anywhere. Lebanese founders who tried to operate as a Lebanon-only business saw their addressable market shrink by half. Those who positioned regionally from day one had options.</p>
+          <p><strong>Four:</strong> Process over heroics. Heroics scale to about six people, then they break. The teams that endured built dull, boring, reliable internal systems &mdash; written playbooks, regular check-ins, clear ownership &mdash; precisely because the external environment was anything but.</p>
+          <p><strong>Five:</strong> Document everything. Founders who left for the diaspora kept their best work alive only when there was written context behind it. Tribal knowledge dies the day someone takes a one-way flight, and a lot of one-way flights happened.</p>
+          <p>The lessons aren't pretty. But the founders who internalized them are now operating with a quiet edge most peer ecosystems lack.</p>
+        </div>
+        <div class="blog-post-actions">
+          <button class="btn btn--ghost btn--sm blog-toggle" type="button" aria-expanded="false" aria-controls="blog-body-2">
+            Read more <svg class="ws-chev" width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><path d="M2 4l3.5 3.5L9 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <p class="by">— The MIC editorial team</p>
+        </div>
+      </article>
+
+      <!-- Post 3 -->
+      <article class="blog-post blog-post--collapsible reveal">
+        <div class="meta">
+          <span class="tag">Location</span>
+          <span class="dot">·</span>
+          <span>4 min read</span>
+          <span class="dot">·</span>
+          <span>March 2026</span>
+        </div>
+        <h2>Beyond Beirut: why <em>the Metn</em> is becoming Lebanon's innovation corridor.</h2>
+        <p class="lede">Beirut got the headlines for a generation. The next chapter of Lebanese entrepreneurship is being written ten kilometers east, in the towns and suburbs of Mount Lebanon.</p>
+        <div class="body" id="blog-body-3" hidden>
+          <p>If you spent the 2010s in Lebanese tech, every meeting happened in Hamra, Mar Mikhael, or Gemmayze. Beirut was the gravity. Cool was synonymous with downtown. Office leases priced accordingly.</p>
+          <p>That gravity has shifted. The reasons are partly tragic &mdash; the August 4 explosion, the financial collapse, the rolling exodus &mdash; but the result is structural. Where founders live, work, and build has moved, and the Metn has absorbed the most concentrated share.</p>
+          <p>Three things are pulling people east. First, it's where families ended up: schools, longer leases, and the kind of housing density that supports a working professional class. Second, infrastructure: reliable electricity provision through neighborhood échitirâk, water that arrives when it's scheduled, internet that mostly stays up. Third, cost: office space in Jdeideh, Antelias, or Dora runs at a fraction of what equivalent square footage costs in Beirut proper.</p>
+          <p>What's missing &mdash; until now &mdash; is dedicated infrastructure for builders. Coffee shops have done heroic work as substitute offices for years, but they're not a substitute for a campus designed around the work. The Metn has the people, the families, the residential density, and the operating reliability. What it needs is somewhere for those people to gather, collide, and ship.</p>
+          <p>That's the bet behind MIC: that the next Lebanese tech generation will be Metn-based, not Beirut-based, and that an intentionally-designed campus in Jdeideh will be one of the places that generation chooses to call work.</p>
+        </div>
+        <div class="blog-post-actions">
+          <button class="btn btn--ghost btn--sm blog-toggle" type="button" aria-expanded="false" aria-controls="blog-body-3">
+            Read more <svg class="ws-chev" width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><path d="M2 4l3.5 3.5L9 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <p class="by">— The MIC editorial team</p>
+        </div>
+      </article>
+
+      <!-- Post 4 -->
+      <article class="blog-post blog-post--collapsible reveal">
+        <div class="meta">
+          <span class="tag">Playbook</span>
+          <span class="dot">·</span>
+          <span>6 min read</span>
+          <span class="dot">·</span>
+          <span>February 2026</span>
+        </div>
+        <h2>From idea to MVP in Lebanon: a <em>practical playbook</em>.</h2>
+        <p class="lede">Most idea-stage founders don't fail because the idea is bad. They fail because they spent six months building before they spent six weeks asking.</p>
+        <div class="body" id="blog-body-4" hidden>
+          <p>Here's an honest sequence we've watched work for first-time Lebanese founders.</p>
+          <p><strong>Weeks 1–3: Talk to twenty people.</strong> Not friends. People who actually have the problem you think you're solving. Buy them coffee. Ask them how they handle it today. If you can't find twenty in three weeks, your problem is either too niche or doesn't really exist &mdash; better to know now.</p>
+          <p><strong>Weeks 4–6: Build the cheapest possible thing.</strong> A Google Form, a WhatsApp group, a manual service you fulfill yourself. Anything that lets you charge or commit a customer. The goal is to feel the friction of real exchange before you write a line of production code.</p>
+          <p><strong>Weeks 7–10: Get five paying users.</strong> Not five sign-ups. Five people who paid you actual money &mdash; even five dollars &mdash; for the cheap thing. Lebanese founders often skip this step because "the market is too small to pay." It's not. They're usually selling to the wrong segment.</p>
+          <p><strong>Weeks 11–14: Build the real MVP.</strong> Now you build software. You know the problem, you've felt the workflow, you've heard your users complain in their own words. Building is easier when you're translating something you already understand &mdash; not guessing.</p>
+          <p><strong>Weeks 15–16: Launch publicly. Reflect honestly.</strong> Most Lebanese founders we've seen succeed at this stage have one trait in common: they took written notes through the entire fourteen weeks. They have a paper trail of what they thought, what they learned, what changed.</p>
+          <p>That paper trail becomes the pitch deck. Don't skip it.</p>
+        </div>
+        <div class="blog-post-actions">
+          <button class="btn btn--ghost btn--sm blog-toggle" type="button" aria-expanded="false" aria-controls="blog-body-4">
+            Read more <svg class="ws-chev" width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><path d="M2 4l3.5 3.5L9 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <p class="by">— The MIC editorial team</p>
+        </div>
+      </article>
+
+      <!-- Post 5 -->
+      <article class="blog-post blog-post--collapsible reveal">
+        <div class="meta">
+          <span class="tag">Capital</span>
+          <span class="dot">·</span>
+          <span>5 min read</span>
+          <span class="dot">·</span>
+          <span>January 2026</span>
+        </div>
+        <h2>Raising capital as a <em>Lebanese founder</em>: the rules are different.</h2>
+        <p class="lede">If your fundraising playbook came from Y Combinator's library, congratulations &mdash; you've learned the wrong game.</p>
+        <div class="body" id="blog-body-5" hidden>
+          <p>Here's the one we actually play.</p>
+          <p>The standard Silicon Valley narrative goes like this: build something users love, show steep early growth, send a deck to twenty VCs, run a hot process, close a round in six weeks. None of that translates cleanly to a Lebanese founder raising in 2026.</p>
+          <p>The first reality: regional and diaspora investors care more about <em>operating quality</em> than growth curve. Lebanese founders raising from MENA funds or diaspora angels are evaluated on whether they can survive turbulent operating environments &mdash; not whether they can hockey-stick under perfect conditions. Show resilience, not vanity.</p>
+          <p>The second reality: warm introductions matter more than they should. The Beirut-to-Riyadh-to-Dubai investor network runs on personal trust, and a cold deck without a warm intro will sit unread. Spend the first month of your raise getting introductions lined up, not polishing your slides.</p>
+          <p>The third reality: structure your raise in fresh USD and through an offshore entity if possible. Lebanese investors and the diaspora can wire to Cyprus, Delaware, or Dubai. They generally cannot wire into Lebanese banks. Founders who waited to set this up after a term sheet have lost deals to weeks of legal scrambling.</p>
+          <p>The fourth reality: take smart money, not just any money. A check from a regional family office or a diaspora operator who can open doors is worth twice the same amount from a passive local investor. In a small ecosystem, the wrong cap table becomes a brand problem you carry for years.</p>
+          <p>Fundraising as a Lebanese founder is harder. It's also &mdash; if done right &mdash; a forcing function for the operating discipline that becomes your unfair advantage later.</p>
+        </div>
+        <div class="blog-post-actions">
+          <button class="btn btn--ghost btn--sm blog-toggle" type="button" aria-expanded="false" aria-controls="blog-body-5">
+            Read more <svg class="ws-chev" width="11" height="11" viewBox="0 0 11 11" aria-hidden="true"><path d="M2 4l3.5 3.5L9 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <p class="by">— The MIC editorial team</p>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- Contribute CTA (warm cream band) -->
+<section class="section section-warm" style="padding:48px 0;">
+  <div class="container reveal">
+    <div class="contribute-card">
+      <div>
+        <span class="eyebrow"><span class="num">→</span> Open to the community</span>
+        <h2 style="margin-top:14px;margin-bottom:14px;">Got something to <em>say</em>?</h2>
+        <p style="font-size:16px;max-width:580px;color:var(--ink-soft);">
+          The blog is open to contributors. Submit a draft, our editorial team reviews it, and if it
+          fits, it goes live with full credit to you. Honest writing on building, operating, raising,
+          and surviving in Lebanon &mdash; especially welcome.
+        </p>
+      </div>
+      <button class="btn btn--primary" data-modal="modal-contribute">
+        Submit a piece <svg class="arr" width="14" height="14"><use href="#arr"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Subscribe CTA -->
+<section class="section-dark section-sm">
+  <div class="container reveal" style="display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;">
+    <div>
+      <h2 style="margin-bottom:8px;">Get new posts in your inbox.</h2>
+      <p style="font-size:15px;max-width:520px;">
+        One short email when a new post goes up &mdash; roughly twice a month. No tracking, no newsletters within newsletters.
+      </p>
+    </div>
+    <button class="btn btn--amber" data-modal="modal-blog">
+      Subscribe <svg class="arr" width="14" height="14"><use href="#arr"/></svg>
+    </button>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-brand"><img src="mic-icon-white.png" alt="MIC icon"/>Metn Innovation Campus</div>
+        <p>A campus, community and set of programs for people building the next generation of real business leaders from Lebanon.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Explore</h5>
+        <ul>
+          <li><a href="index.html#coworking">Coworking</a></li>
+          <li><a href="index.html#offices">Team Offices</a></li>
+          <li><a href="programs.html">Programs</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="events.html">Events</a></li>
+          <li><a href="blog.html">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Visit</h5>
+        <ul>
+          <li>Jdeideh, Metn</li>
+          <li>Mount Lebanon</li>
+          <li>Mon–Fri · 8:00–20:00</li>
+          <li>Sat · 8:00–14:00</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="mailto:info@mic-lb.com">info@mic-lb.com</a></li>
+          <li><a href="tel:+96171040640">+961 71 040 640</a></li>
+          <li><a href="https://wa.me/96171040640" target="_blank" rel="noopener">WhatsApp: +961 71 040 640</a></li>
+          <li><a href="https://t.me/+96171040640" target="_blank" rel="noopener">Telegram: +961 71 040 640</a></li>
+        </ul>
+        <div class="footer-social">
+          <a href="https://www.linkedin.com/company/metninnovationcampus" target="_blank" rel="noopener" aria-label="LinkedIn">LinkedIn</a>
+          <a href="https://www.instagram.com/metninnovationcampus" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
+          <a href="https://www.youtube.com/@MetnInnovationCampus" target="_blank" rel="noopener" aria-label="YouTube">YouTube</a>
+          <a href="https://www.facebook.com/metninnovationcampus" target="_blank" rel="noopener" aria-label="Facebook">Facebook</a>
+          <a href="https://x.com/metninnovation" target="_blank" rel="noopener" aria-label="X">X</a>
+          <a href="https://www.tiktok.com/@metninnovationcampus" target="_blank" rel="noopener" aria-label="TikTok">TikTok</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Metn Innovation Campus. All rights reserved.</span>
+      <span>Built with <em>♥</em> in Lebanon</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Modals -->
+<div class="modal-backdrop" id="modal-tour" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal">
+    <button class="modal-close" data-modal-close aria-label="Close"><svg width="14" height="14"><use href="#close"/></svg></button>
+    <div class="modal-eyebrow">Virtual tour · Launching October 8, 2026</div>
+    <h3>Step inside the campus, <em>from anywhere</em>.</h3>
+    <p class="modal-desc">Our 360° tour launches alongside the campus. We'll send the link the moment it goes live.</p>
+    <form name="virtual-tour" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="virtual-tour"/>
+      <p hidden><label>Don’t fill this out: <input name="bot-field"/></label></p>
+      <div class="form-row cols-2">
+        <div class="field"><label>Full name</label><input type="text" name="name" required placeholder="Your name"/></div>
+        <div class="field"><label>Email</label><input type="email" name="email" required placeholder="you@email.com"/></div>
+      </div>
+      <div class="modal-actions"><button type="submit" class="btn btn--primary btn--block">Notify me at launch →</button></div>
+    </form>
+    <div class="modal-success" style="display:none;">
+      <div class="check"><svg width="28" height="28"><use href="#check"/></svg></div>
+      <h3>You're on the list.</h3>
+      <p style="font-size:15px;">We'll send the tour link on October 8, 2026.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-blog" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal">
+    <button class="modal-close" data-modal-close aria-label="Close"><svg width="14" height="14"><use href="#close"/></svg></button>
+    <div class="modal-eyebrow">Newsletter</div>
+    <h3>New posts in <em>your inbox</em>.</h3>
+    <p class="modal-desc">Roughly twice a month. Real writing, no marketing filler, easy unsubscribe.</p>
+    <form name="blog-newsletter" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="blog-newsletter"/>
+      <p hidden><label>Don’t fill this out: <input name="bot-field"/></label></p>
+      <div class="form-row cols-2">
+        <div class="field"><label>Full name</label><input type="text" name="name" required placeholder="Your name"/></div>
+        <div class="field"><label>Email</label><input type="email" name="email" required placeholder="you@email.com"/></div>
+      </div>
+      <div class="modal-actions"><button type="submit" class="btn btn--primary btn--block">Subscribe →</button></div>
+      <p class="modal-fine">Unsubscribe any time. We don't share emails with anyone.</p>
+    </form>
+    <div class="modal-success" style="display:none;">
+      <div class="check"><svg width="28" height="28"><use href="#check"/></svg></div>
+      <h3>Subscribed.</h3>
+      <p style="font-size:15px;">Next post lands in your inbox soon.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Contribute a blog post -->
+<div class="modal-backdrop" id="modal-contribute" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-contribute-title">
+  <div class="modal">
+    <button class="modal-close" data-modal-close aria-label="Close"><svg width="14" height="14"><use href="#close"/></svg></button>
+    <div class="modal-eyebrow">Community submission</div>
+    <h3 id="modal-contribute-title">Pitch your <em>piece</em>.</h3>
+    <p class="modal-desc">
+      The blog is open to the community. Submit a draft or a pitch &mdash; our editorial team reviews
+      every submission and, if it fits, publishes with full credit to you.
+    </p>
+    <form name="blog-contribute" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="blog-contribute"/>
+      <p hidden><label>Don’t fill this out: <input name="bot-field"/></label></p>
+      <div class="form-row cols-2">
+        <div class="field">
+          <label for="cb-name">Full name</label>
+          <input id="cb-name" type="text" name="name" required placeholder="Your name"/>
+        </div>
+        <div class="field">
+          <label for="cb-email">Email</label>
+          <input id="cb-email" type="email" name="email" required placeholder="you@email.com"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="cb-credit">How would you like to be credited?</label>
+          <input id="cb-credit" type="text" name="credit" placeholder="e.g. Lara Khoury, founder of [Company]"/>
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div class="field">
+          <label for="cb-title">Piece title or working title</label>
+          <input id="cb-title" type="text" name="title" required placeholder="What's it called?"/>
+        </div>
+        <div class="field">
+          <label for="cb-topic">Topic</label>
+          <select id="cb-topic" name="topic">
+            <option value="">Select…</option>
+            <option>Ecosystem</option>
+            <option>Operating</option>
+            <option>Location &amp; place</option>
+            <option>Playbook</option>
+            <option>Capital &amp; fundraising</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="cb-pitch">What's the piece about, and why now?</label>
+          <textarea id="cb-pitch" name="pitch" rows="3" required placeholder="A short pitch: the core argument or story, and why it matters to founders in Lebanon."></textarea>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="cb-draft">Draft or link</label>
+          <textarea id="cb-draft" name="draft" rows="4" placeholder="Paste the draft here, or share a link to a Google Doc, Notion page, or hosted draft. If you only have a pitch, that's fine — leave this blank."></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn--primary btn--block">Submit for review →</button>
+      </div>
+      <p class="modal-fine">
+        We respond within five business days. Pieces are edited lightly for clarity &mdash; we'll send you the
+        edits before publishing, and you'll always be credited as the author.
+      </p>
+    </form>
+    <div class="modal-success" style="display:none;">
+      <div class="check"><svg width="28" height="28"><use href="#check"/></svg></div>
+      <h3>Submission received.</h3>
+      <p style="font-size:15px;">We'll read it carefully and get back to you within five business days.</p>
+    </div>
+  </div>
+</div>
+
+<script src="scripts.js"></script>
+</body>
+</html>
