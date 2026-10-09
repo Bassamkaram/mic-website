@@ -216,13 +216,13 @@
 
   /* ---------------------------------------------------------
      Countdown timer
-     Target: Thursday, October 8, 2026, 08:00:00 Lebanon (UTC+3)
+     Target: Tuesday, October 20, 2026, 08:00:00 Lebanon (UTC+3)
      --------------------------------------------------------- */
   function initCountdown() {
     var root = document.getElementById('countdown');
     if (!root) return;
 
-    var target = new Date('2026-10-08T08:00:00+03:00').getTime();
+    var target = new Date('2026-10-20T08:00:00+03:00').getTime();
     var done   = document.getElementById('countdownDone');
 
     function tick() {
