@@ -444,45 +444,45 @@ p       { color: var(--ink-soft); }
 
 .attractions-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
 }
-@media (max-width: 880px) { .attractions-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 440px) { .attractions-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1080px) { .attractions-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px)  { .attractions-grid { grid-template-columns: repeat(2, 1fr); } }
 
 .attr-item {
   position: relative;
   display: flex; flex-direction: column; align-items: center;
   text-align: center;
-  padding: 28px 16px;
-  border-radius: 14px;
+  padding: 18px 10px;
+  border-radius: 12px;
   background: rgba(27,67,50,0.025);
   transition: background 0.25s var(--ease), transform 0.25s var(--ease);
 }
 .attr-item:hover { background: rgba(27,67,50,0.07); transform: translateY(-2px); }
 .attr-item .ico {
-  width: 52px; height: 52px;
+  width: 38px; height: 38px;
   display: grid; place-items: center;
   color: var(--cedar);
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
-.attr-item .ico svg { width: 36px; height: 36px; }
+.attr-item .ico svg { width: 26px; height: 26px; }
 .attr-item .label {
-  font-size: 14.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink);
   line-height: 1.3;
 }
 .attr-item .soon {
   display: inline-block;
-  margin-top: 6px;
-  font-size: 10px;
+  margin-top: 5px;
+  font-size: 9px;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--amber);
   background: rgba(217,119,6,0.12);
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 999px;
 }
 
