@@ -444,7 +444,7 @@ p       { color: var(--ink-soft); }
 
 .attractions-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 @media (max-width: 880px) { .attractions-grid { grid-template-columns: repeat(2, 1fr); } }
