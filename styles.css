@@ -1795,3 +1795,105 @@ html.js-anim .reveal.in { opacity: 1; transform: translateY(0); }
     grid-template-columns: 1fr !important; gap: 32px !important;
   }
 }
+
+/* ============================================================
+   LEGAL PAGES (privacy policy)
+   ============================================================ */
+.legal-head {
+  background: var(--bg-warm);
+  border-bottom: 1px solid var(--line);
+  padding: 56px 0 44px;
+}
+.legal-head h1 {
+  margin: 14px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(38px, 5.4vw, 60px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--cedar);
+}
+.legal-head h1 em { font-style: italic; color: var(--cedar-light); }
+.legal-updated {
+  margin: 16px 0 0;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--ink-mute);
+}
+
+.legal {
+  max-width: 780px;
+  padding-block: 52px 76px;
+}
+.legal-lede {
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--ink);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+.legal h2 {
+  margin: 44px 0 14px;
+  font-family: var(--sans);
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--cedar);
+}
+.legal h3 {
+  margin: 28px 0 10px;
+  font-family: var(--sans);
+  font-size: 15.5px;
+  font-weight: 650;
+  color: var(--ink);
+}
+.legal p,
+.legal li {
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+.legal p { margin: 0 0 14px; }
+.legal ul {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  list-style: disc;
+}
+.legal li { margin-bottom: 8px; }
+.legal li::marker { color: var(--cedar-light); }
+.legal strong { color: var(--ink); font-weight: 600; }
+.legal a {
+  color: var(--cedar-light);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.legal a:hover { color: var(--cedar); }
+
+.legal ul.legal-contact {
+  list-style: none;
+  padding: 18px 22px;
+  margin: 0 0 16px;
+  background: rgba(27,67,50,0.025);
+  border-radius: var(--r-sm);
+}
+.legal ul.legal-contact li {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.legal ul.legal-contact li:last-child { margin-bottom: 0; }
+.legal ul.legal-contact strong {
+  flex: 0 0 76px;
+  padding-top: 3px;
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-weight: 500;
+}
+
+@media (max-width: 620px) {
+  .legal-head { padding: 40px 0 34px; }
+  .legal { padding-block: 40px 56px; }
+  .legal ul.legal-contact li { display: block; }
+  .legal ul.legal-contact strong { display: block; margin-bottom: 2px; padding-top: 0; }
+}
