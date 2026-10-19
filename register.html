@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Register · Metn Innovation Campus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#1B4332; --green-2:#183D31; --blue:#2563EB; --amber:#D97706;
+    --ink:#14201b; --muted:#5b6b64; --line:#dfe6e2; --bg:#f3f6f4; --card:#ffffff;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:520px;margin:0 auto;padding:24px 16px 48px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px 22px;box-shadow:0 10px 30px rgba(20,32,27,.06)}
+  .logo{display:flex;justify-content:center;margin-bottom:18px}
+  .logo img{max-width:200px;max-height:110px;object-fit:contain}
+  .organizer{text-align:center;color:var(--muted);font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px}
+  h1{font-family:Montserrat,sans-serif;font-weight:700;font-size:22px;line-height:1.25;text-align:center;margin:0 0 6px;color:var(--green)}
+  .meta{text-align:center;color:var(--muted);font-size:14px;margin:0 0 22px}
+  .intro{font-size:15px;line-height:1.5;color:var(--ink);background:#f6faf7;border-left:3px solid var(--green);padding:10px 14px;border-radius:8px;margin:0 0 22px}
+  label{display:block;font-size:13px;font-weight:600;color:var(--green-2);margin:14px 0 6px}
+  label span{color:var(--muted);font-weight:400}
+  input,textarea{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);outline:none;transition:border .15s,box-shadow .15s}
+  input:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+  textarea{min-height:96px;resize:vertical}
+  .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+  button{width:100%;margin-top:22px;font:inherit;font-weight:600;font-size:16px;padding:14px;border:0;border-radius:12px;background:var(--green);color:#fff;cursor:pointer;transition:background .15s,transform .05s}
+  button:hover{background:var(--green-2)} button:active{transform:translateY(1px)}
+  button[disabled]{opacity:.6;cursor:progress}
+  .err{display:none;margin-top:14px;padding:10px 12px;border-radius:10px;background:#fdf1f1;color:#9b2226;font-size:14px}
+  .err.show{display:block}
+  .state{text-align:center;padding:26px 6px}
+  .state .big{font-size:44px;line-height:1;margin-bottom:10px}
+  .state h2{font-family:Montserrat,sans-serif;color:var(--green);margin:0 0 8px;font-size:20px}
+  .state p{color:var(--muted);margin:0;line-height:1.5}
+  .foot{text-align:center;color:var(--muted);font-size:12.5px;line-height:1.7;margin-top:22px}
+  .foot b{color:var(--green);font-family:Montserrat,sans-serif;font-weight:600}
+  .foot a{color:var(--blue);text-decoration:none}
+  .skel{height:14px;background:linear-gradient(90deg,#eef2f0,#f7f9f8,#eef2f0);background-size:200% 100%;animation:sh 1.2s infinite;border-radius:6px;margin:10px auto}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){--bg:#0f1512;--card:#17201c;--ink:#e9efec;--muted:#9fb0a8;--line:#2a3630}
+    :root:not([data-theme="light"]) .intro{background:#1d2a24}
+    :root:not([data-theme="light"]) input,:root:not([data-theme="light"]) textarea{background:#101715;color:var(--ink)}
+    :root:not([data-theme="light"]) h1,:root:not([data-theme="light"]) .state h2,:root:not([data-theme="light"]) .foot b{color:#9fd3b8}
+    :root:not([data-theme="light"]) label{color:#bfe3d0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="app">
+    <div class="state" id="loading">
+      <div class="skel" style="width:140px;height:70px"></div>
+      <div class="skel" style="width:70%"></div>
+      <div class="skel" style="width:45%"></div>
+    </div>
+  </div>
+  <div class="foot">
+    <b>Metn Innovation Campus</b> · Jdeideh<br>
+    <a href="https://www.mic-lb.com">www.mic-lb.com</a> · 71-040-640 · <a href="mailto:info@mic-lb.com">info@mic-lb.com</a>
+  </div>
+</div>
+
+<script>
+/* ---------- Config: same project as the platform ---------- */
+const MIC_CONFIG = {
+  SUPABASE_URL: "https://xnegzvpuagxgahlbtzaf.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuZWd6dnB1YWd4Z2FobGJ0emFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODk0NDIsImV4cCI6MjA5Mzk2NTQ0Mn0.RXBD_LxrZiv0tQfX7W6S9wT8JKNMPd5xB3LBlV50lAE"
+};
+
+const $app = document.getElementById('app');
+const slug = new URLSearchParams(location.search).get('e');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const headers = { apikey: MIC_CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + MIC_CONFIG.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' };
+
+function fmtDate(d, end){
+  if(!d) return '';
+  const o = {day:'numeric', month:'long', year:'numeric'};
+  const a = new Date(d + 'T00:00:00').toLocaleDateString('en-GB', o);
+  if(end && end !== d){ const b = new Date(end + 'T00:00:00').toLocaleDateString('en-GB', o); return a + ' to ' + b; }
+  return a;
+}
+
+function renderState(icon, title, text){
+  $app.innerHTML = `<div class="state"><div class="big">${icon}</div><h2>${esc(title)}</h2><p>${esc(text)}</p></div>`;
+}
+
+function renderForm(ev){
+  const logo = ev.organizer_logo ? `<div class="logo"><img src="${ev.organizer_logo}" alt="${esc(ev.organizer || 'Organizer')} logo"></div>` : '';
+  const note = ev.welcome_note || `Welcome to the ${ev.title}. Kindly fill in your details to register and share your feedback.`;
+  $app.innerHTML = `
+    ${logo}
+    ${ev.organizer ? `<p class="organizer">${esc(ev.organizer)}</p>` : ''}
+    <h1>${esc(ev.title)}</h1>
+    <p class="meta">${esc(fmtDate(ev.event_date, ev.end_date))}${ev.event_date ? ' · ' : ''}${esc(ev.venue || 'Workshop Room')}, Metn Innovation Campus</p>
+    <p class="intro">${esc(note)}</p>
+    <form id="f" novalidate>
+      <label for="full_name">Full name</label>
+      <input id="full_name" name="full_name" autocomplete="name" required maxlength="120">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="200">
+      <label for="phone">Phone number</label>
+      <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="40" placeholder="71 123 456">
+      <label for="feedback">Your feedback <span>(optional)</span></label>
+      <textarea id="feedback" name="feedback" maxlength="2000" placeholder="Anything you would like the organizers to know"></textarea>
+      <input class="hp" name="website" tabindex="-1" autocomplete="off">
+      <button type="submit" id="submit">Submit</button>
+      <div class="err" id="err"></div>
+    </form>`;
+}
+
+async function load(){
+  if(!slug){ renderState('🔍', 'No event selected', 'This link is missing its event code. Please scan the QR code on your card again.'); return; }
+  if(MIC_CONFIG.SUPABASE_ANON_KEY.startsWith('__')){ renderState('⚙️', 'Not configured', 'The registration page is missing its Supabase key.'); return; }
+  try{
+    const r = await fetch(`${MIC_CONFIG.SUPABASE_URL}/rest/v1/events?slug=eq.${encodeURIComponent(slug)}&select=id,title,organizer,organizer_logo,event_date,end_date,venue,welcome_note,status`, { headers });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const rows = await r.json();
+    if(!rows.length){ renderState('🔍', 'Event not found', 'This QR code does not match an event. Please ask the MIC team at the desk.'); return; }
+    const ev = rows[0];
+    if(ev.status !== 'open'){ renderState('🔒', 'Registration closed', `Registration for ${ev.title} is no longer open. Thank you for joining us.`); return; }
+    window.__event = ev;
+    renderForm(ev);
+  }catch(e){
+    renderState('⚠️', 'Connection problem', 'We could not load the event. Check your connection and try again.');
+  }
+}
+
+document.addEventListener('submit', async e => {
+  if(e.target.id !== 'f') return;
+  e.preventDefault();
+  const f = e.target, err = document.getElementById('err'), btn = document.getElementById('submit');
+  const v = n => (f.elements.namedItem(n)?.value || '');
+  err.className = 'err';
+  if(v('website')) return;                            /* honeypot */
+  const data = {
+    event_id: window.__event.id,
+    full_name: v('full_name').trim(),
+    email: v('email').trim().toLowerCase(),
+    phone: v('phone').trim(),
+    feedback: v('feedback').trim() || null
+  };
+  if(data.full_name.length < 2){ return fail('Please enter your full name.'); }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)){ return fail('Please enter a valid email address.'); }
+  if(data.phone.replace(/\D/g,'').length < 6){ return fail('Please enter a valid phone number.'); }
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  try{
+    const r = await fetch(`${MIC_CONFIG.SUPABASE_URL}/rest/v1/event_attendees`, { method:'POST', headers:{...headers, Prefer:'return=minimal'}, body: JSON.stringify(data) });
+    if(r.status === 409){ renderState('✅', 'You are already registered', `We already have a registration for ${data.email}. Thank you.`); return; }
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    renderState('🎉', 'Thank you, ' + data.full_name.split(' ')[0] + '!', `You are registered for ${window.__event.title}. Enjoy the session.`);
+  }catch(ex){
+    fail('Something went wrong while submitting. Please try again or see the MIC team at the desk.');
+  }
+  function fail(msg){ err.textContent = msg; err.className = 'err show'; btn.disabled = false; btn.textContent = 'Submit'; }
+});
+
+load();
+</script>
+</body>
+</html>
