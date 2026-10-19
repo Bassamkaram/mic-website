@@ -93,12 +93,12 @@ function renderState(icon, title, text){
 
 function renderForm(ev){
   const logo = ev.organizer_logo ? `<div class="logo"><img src="${ev.organizer_logo}" alt="${esc(ev.organizer || 'Organizer')} logo"></div>` : '';
-  const note = ev.welcome_note || `Welcome to the ${ev.title}. Kindly fill in your details to register and share your feedback.`;
+  const note = `Welcome to the ${ev.title}. Kindly fill in your details below to register and share your feedback.`;
   $app.innerHTML = `
     ${logo}
     ${ev.organizer ? `<p class="organizer">${esc(ev.organizer)}</p>` : ''}
     <h1>${esc(ev.title)}</h1>
-    <p class="meta">${esc(fmtDate(ev.event_date, ev.end_date))}${ev.event_date ? ' · ' : ''}${esc(ev.venue || 'Workshop Room')}, Metn Innovation Campus</p>
+    ${ev.event_date ? `<p class="meta">${esc(fmtDate(ev.event_date, ev.end_date))}</p>` : ''}
     <p class="intro">${esc(note)}</p>
     <form id="f" novalidate>
       <label for="full_name">Full name</label>
