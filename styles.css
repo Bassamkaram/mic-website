@@ -646,10 +646,11 @@ p       { color: var(--ink-soft); }
 
 .offices-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
   margin: 28px 0;
 }
+@media (max-width: 760px) { .offices-stats { grid-template-columns: 1fr 1fr; } }
 .stat {
   border: 1px solid var(--line-dark);
   border-radius: var(--r);
@@ -1896,4 +1897,30 @@ html.js-anim .reveal.in { opacity: 1; transform: translateY(0); }
   .legal { padding-block: 40px 56px; }
   .legal ul.legal-contact li { display: block; }
   .legal ul.legal-contact strong { display: block; margin-bottom: 2px; padding-top: 0; }
+}
+
+
+/* ============================================================
+   PACKAGE CARD CTA + SOLD-OUT FLAG
+   ============================================================ */
+.pkg-cta { margin-top: 16px; }
+.pkg-btn {
+  font-size: 14px;
+  padding: 11px 16px;
+}
+.pkg h4 .pkg-flag {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 8px;
+  transform: translateY(-1px);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rose);
+  background: rgba(194,65,12,0.10);
+  border: 1px solid rgba(194,65,12,0.22);
+  padding: 3px 8px;
+  border-radius: 999px;
 }

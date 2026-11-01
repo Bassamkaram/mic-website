@@ -17,6 +17,7 @@
     initWorkshops();
     initBlogToggles();
     initServiceRequest();
+    initRoomBooking();
   }
 
   /* ---------------------------------------------------------
@@ -434,6 +435,26 @@
         var svc = trigger.getAttribute('data-service') || 'Service';
         if (nameLabel) nameLabel.textContent = svc;
         if (nameInput) nameInput.value = svc;
+      });
+    });
+  }
+
+  /* ---------------------------------------------------------
+     Room booking: the Book Online buttons on Meeting, Workshop
+     and Podcast all open the same modal. Stamp it with the room
+     that was clicked so the Netlify submission records which
+     space it is for. These per-trigger handlers run before the
+     delegated opener in initModals (bubble order).
+     --------------------------------------------------------- */
+  function initRoomBooking() {
+    var label = document.getElementById('book-space-name');
+    var input = document.getElementById('book-space-input');
+    if (!label || !input) return;
+    document.querySelectorAll('[data-modal="modal-book"][data-space]').forEach(function (trigger) {
+      trigger.addEventListener('click', function () {
+        var space = trigger.getAttribute('data-space') || 'Room';
+        label.textContent = space;
+        input.value = space;
       });
     });
   }

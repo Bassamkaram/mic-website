@@ -247,7 +247,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </p>
         <div class="hero-actions">
           <button class="btn btn--primary" data-modal="modal-hot">
-            Pre-book your spot <svg class="arr" width="14" height="14"><use href="#arr"/></svg>
+            Book your spot <svg class="arr" width="14" height="14"><use href="#arr"/></svg>
           </button>
           <button class="btn btn--ghost" data-modal="modal-tour">
             <svg width="11" height="11" style="margin-right:2px"><use href="#i-play"/></svg>
@@ -303,13 +303,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <section class="section" id="coworking">
   <div class="container">
     <div class="section-head reveal">
-      <span class="eyebrow"><span class="num">01</span> Coworking Space</span>
+      <span class="eyebrow"><span class="num">01</span> Coworking Space (Ground Floor)</span>
       <div class="h-row">
         <h2>Show up. Plug in.<br/><em>Make progress.</em></h2>
-        <p>
-          Five ways to use the space depending on how you work,
-          from a single morning to a permanent seat.
-        </p>
       </div>
     </div>
 
@@ -323,30 +319,42 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="pkg-price">$15<span class="per">/day pass</span></div>
             <div class="pkg-price pkg-price--alt">$100<span class="per">/month</span></div>
           </div>
+          <div class="pkg-cta">
+            <button class="btn btn--primary btn--block pkg-btn" data-modal="modal-hot">Book Online</button>
+          </div>
         </div>
       </div>
       <div class="pkg reveal">
         <figure class="pkg-photo"><img src="pkg-private-desk.jpg" alt="Private desks at MIC" loading="lazy"/></figure>
         <div class="pkg-body">
-          <h4>Private Desk</h4>
+          <h4>Private Desk <span class="pkg-flag">Sold out</span></h4>
           <p class="pkg-desc">Your own desk, every day. Everything stays where you left them.</p>
           <div class="pkg-price">$200<span class="per">/month</span></div>
+          <div class="pkg-cta">
+            <button class="btn btn--primary btn--block pkg-btn" data-modal="modal-private">Join Waitlist</button>
+          </div>
         </div>
       </div>
       <div class="pkg reveal">
         <figure class="pkg-photo"><img src="pkg-meeting.jpg" alt="Meeting room at MIC" loading="lazy"/></figure>
         <div class="pkg-body">
           <h4>Meeting Room</h4>
-          <p class="pkg-desc">Up to 10 persons with smart screen and whiteboard.</p>
+          <p class="pkg-desc">Up to 15 persons with smart screen and whiteboard.</p>
           <div class="pkg-price">$20<span class="per">/hour</span></div>
+          <div class="pkg-cta">
+            <button class="btn btn--primary btn--block pkg-btn" data-modal="modal-book" data-space="Meeting Room">Book Online</button>
+          </div>
         </div>
       </div>
       <div class="pkg reveal">
         <figure class="pkg-photo"><img src="pkg-workshop.jpg" alt="Workshop room at MIC" loading="lazy"/></figure>
         <div class="pkg-body">
           <h4>Workshop Room</h4>
-          <p class="pkg-desc">Large room for sessions of up to 20 persons. Reconfigurable, AV-equipped.</p>
-          <div class="pkg-price">$200<span class="per">/half-day</span></div>
+          <p class="pkg-desc">Large room for sessions of up to 40 persons. Reconfigurable, AV-equipped.</p>
+          <div class="pkg-price">$200<span class="per">/day</span></div>
+          <div class="pkg-cta">
+            <button class="btn btn--primary btn--block pkg-btn" data-modal="modal-book" data-space="Workshop Room">Book Online</button>
+          </div>
         </div>
       </div>
       <div class="pkg reveal">
@@ -355,18 +363,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <h4>Podcast Room</h4>
           <p class="pkg-desc">Sound-treated, mics, lighting, and a clean backdrop. Book per session.</p>
           <div class="pkg-price">$15<span class="per">/hour</span></div>
+          <div class="pkg-cta">
+            <button class="btn btn--primary btn--block pkg-btn" data-modal="modal-book" data-space="Podcast Room">Book Online</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="mt-lg reveal" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      <button class="btn btn--primary" data-modal="modal-hot">
-        Pre-book a shared desk <svg class="arr" width="14" height="14"><use href="#arr"/></svg>
-      </button>
-      <button class="btn btn--ghost" data-modal="modal-private">
-        Pre-book a private desk
-      </button>
-    </div>
   </div>
 </section>
 
@@ -377,24 +380,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="container">
     <div class="offices-grid">
       <div class="offices-text reveal">
-        <span class="eyebrow"><span class="num">02</span> Team Offices</span>
-        <h2 style="margin:14px 0 18px;">9 furnished offices for <em>growth-stage</em> teams.</h2>
+        <span class="eyebrow"><span class="num">02</span> Team Offices (4th Floor)</span>
+        <h2 style="margin:14px 0 18px;">Furnished offices for <em>growth-stage</em> teams.</h2>
         <p>
-          Furnished offices, designed for established teams who have outgrown a coffee shop
-          but aren't ready for a full lease. Minimum 6 months subscription terms.
+          Designed for teams who have outgrown a coffee shop but aren't ready for a full
+          lease. Minimum 3 months subscription terms.
         </p>
 
         <div class="offices-stats">
-          <div class="stat">
-            <div class="num">9</div>
-            <div class="lbl">Offices available</div>
-          </div>
           <div class="stat">
             <div class="num">35 m²</div>
             <div class="lbl">Per office</div>
           </div>
           <div class="stat">
-            <div class="num">6 mo</div>
+            <div class="num">3 mo</div>
             <div class="lbl">Minimum term</div>
           </div>
           <div class="stat">
@@ -446,38 +445,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- ============================================================
-     Countdown
-     ============================================================ -->
-<section class="countdown-section">
-  <div class="container countdown-inner">
-    <div class="countdown-grid">
-      <div class="countdown-text reveal">
-        <span class="eyebrow"><span class="num">03</span> Launch</span>
-        <h2>Opening Tuesday,<br/><em>October 20, 2026</em><br/>at 8:00 AM.</h2>
-      </div>
-
-      <div class="countdown-cells reveal">
-        <div id="countdown" class="countdown">
-          <div class="cd-cell"><div class="val" id="cdDays">00</div><div class="lbl">Days</div></div>
-          <div class="cd-cell"><div class="val" id="cdHours">00</div><div class="lbl">Hours</div></div>
-          <div class="cd-cell"><div class="val" id="cdMins">00</div><div class="lbl">Minutes</div></div>
-          <div class="cd-cell"><div class="val" id="cdSecs">00</div><div class="lbl">Seconds</div></div>
-        </div>
-        <div id="countdownDone" class="countdown-done" style="display:none;">
-          We're open. <em>Come say hello.</em>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
      Entrepreneurship Programs (teaser)
      ============================================================ -->
 <section class="section" id="programs">
   <div class="container">
     <div class="section-head reveal">
-      <span class="eyebrow"><span class="num">04</span> Entrepreneurship Programs</span>
+      <span class="eyebrow"><span class="num">03</span> Entrepreneurship Programs</span>
       <div class="h-row">
         <h2>Three tracks.<br/><em>One path.</em></h2>
         <p>
@@ -538,7 +511,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="container">
     <div class="events-teaser">
       <div class="reveal">
-        <span class="eyebrow"><span class="num">05</span> Events &amp; Workshops</span>
+        <span class="eyebrow"><span class="num">04</span> Events &amp; Workshops</span>
         <h2 style="margin:14px 0 18px;">Things happen here, <em>most days</em>.</h2>
         <p style="margin-bottom:22px;font-size:16px;max-width:480px;">
           A campus is only as alive as its calendar. Founder Fridays, investor office hours,
@@ -616,7 +589,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="container">
     <div class="map-head reveal">
       <div>
-        <span class="eyebrow"><span class="num">06</span> The Neighborhood</span>
+        <span class="eyebrow"><span class="num">05</span> The Neighborhood</span>
         <h2 style="margin-top:14px;">Everything you need, <em>within walking distance</em>.</h2>
       </div>
       <p>Jdeideh is a vibrant neighborhood with food and beverages, healthcare, fitness, groceries, beauty care and much more, all at minutes walking distance from the campus.</p>
@@ -762,15 +735,68 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
      Modals
      ============================================================ -->
 
-<!-- Modal: Shared Desk Pre-book -->
+<!-- Modal: Book a room (Meeting / Workshop / Podcast) -->
+<div class="modal-backdrop" id="modal-book" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-book-title">
+  <div class="modal">
+    <button class="modal-close" data-modal-close aria-label="Close"><svg width="14" height="14"><use href="#close"/></svg></button>
+    <div class="modal-eyebrow">Book · <span id="book-space-name">Room</span></div>
+    <h3 id="modal-book-title">Reserve the <em>room</em>.</h3>
+    <p class="modal-desc">
+      Tell us when you need it and what you are running. We'll confirm availability and hold the
+      slot for you.
+    </p>
+    <form name="room-booking" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="room-booking"/>
+      <input type="hidden" name="space" id="book-space-input" value="Room"/>
+      <p hidden><label>Don’t fill this out: <input name="bot-field"/></label></p>
+      <div class="form-row cols-2">
+        <div class="field">
+          <label for="bk-name">Full name</label>
+          <input id="bk-name" type="text" name="name" required placeholder="Your name"/>
+        </div>
+        <div class="field">
+          <label for="bk-phone">Phone</label>
+          <input id="bk-phone" type="tel" name="phone" required placeholder="+961…"/>
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div class="field">
+          <label for="bk-email">Email</label>
+          <input id="bk-email" type="email" name="email" required placeholder="you@email.com"/>
+        </div>
+        <div class="field">
+          <label for="bk-date">Preferred date</label>
+          <input id="bk-date" type="date" name="date" required/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="bk-notes">Time, headcount and anything we should set up</label>
+          <textarea id="bk-notes" name="notes" rows="3" placeholder="e.g. Thursday 2–6pm, 18 people, projector and flipchart"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn--primary btn--block">Request this booking →</button>
+      </div>
+      <p class="modal-fine">We confirm availability within one working day before anything is charged.</p>
+    </form>
+    <div class="modal-success" style="display:none;">
+      <div class="check"><svg width="28" height="28"><use href="#check"/></svg></div>
+      <h3>Booking requested.</h3>
+      <p style="font-size:15px;">We'll confirm availability and come back to you within one working day.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Shared Desk Booking -->
 <div class="modal-backdrop" id="modal-hot" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-hot-title">
   <div class="modal">
     <button class="modal-close" data-modal-close aria-label="Close"><svg width="14" height="14"><use href="#close"/></svg></button>
-    <div class="modal-eyebrow">Pre-book · Shared Desk · $100/month</div>
+    <div class="modal-eyebrow">Book · Shared Desk · $100/month</div>
     <h3 id="modal-hot-title">Drop in. <em>Plug in.</em></h3>
     <p class="modal-desc">
       The most flexible way to use the campus. Pick any open seat on the floor, any day of the week.
-      We'll confirm your spot before launch and walk you through onboarding on day one.
+      Send us your details and we'll confirm your start date and walk you through onboarding.
     </p>
     <form name="hot-desk-prebook" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
       <input type="hidden" name="form-name" value="hot-desk-prebook"/>
@@ -792,27 +818,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
       <div class="modal-actions">
-        <button type="submit" class="btn btn--primary btn--block">Confirm pre-booking →</button>
+        <button type="submit" class="btn btn--primary btn--block">Confirm booking →</button>
       </div>
-      <p class="modal-fine">We'll reach out within 48 hours to confirm and lock in your start date. No payment now.</p>
+      <p class="modal-fine">We'll reach out within 48 hours to confirm and lock in your start date.</p>
     </form>
     <div class="modal-success" style="display:none;">
       <div class="check"><svg width="28" height="28"><use href="#check"/></svg></div>
       <h3>You're on the list.</h3>
-      <p style="font-size:15px;">We'll be in touch within 48 hours to confirm your shared desk pre-booking.</p>
+      <p style="font-size:15px;">We'll be in touch within 48 hours to confirm your shared desk booking.</p>
     </div>
   </div>
 </div>
 
-<!-- Modal: Private Desk Pre-book -->
+<!-- Modal: Private Desk Waitlist -->
 <div class="modal-backdrop" id="modal-private" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-private-title">
   <div class="modal">
     <button class="modal-close" data-modal-close aria-label="Close"><svg width="14" height="14"><use href="#close"/></svg></button>
-    <div class="modal-eyebrow">Pre-book · Private Desk · $200/month</div>
+    <div class="modal-eyebrow">Waitlist · Private Desk · $200/month</div>
     <h3 id="modal-private-title">Your seat. <em>Every day.</em></h3>
     <p class="modal-desc">
       A dedicated desk on our coworking floor. Your monitor, your books, your setup &mdash; left exactly
-      as you left it. Limited number of desks; pre-book to lock yours in.
+      as you left it. Every private desk is currently taken. Join the waitlist and we'll contact you
+      the moment one frees up.
     </p>
     <form name="private-desk-prebook" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
       <input type="hidden" name="form-name" value="private-desk-prebook"/>
@@ -834,14 +861,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
       <div class="modal-actions">
-        <button type="submit" class="btn btn--primary btn--block">Confirm pre-booking →</button>
+        <button type="submit" class="btn btn--primary btn--block">Join the waitlist →</button>
       </div>
-      <p class="modal-fine">We'll reach out within 48 hours to confirm and reserve your desk. No payment now.</p>
+      <p class="modal-fine">No payment and no commitment. We contact waitlist members in the order they joined.</p>
     </form>
     <div class="modal-success" style="display:none;">
       <div class="check"><svg width="28" height="28"><use href="#check"/></svg></div>
-      <h3>Your desk is held.</h3>
-      <p style="font-size:15px;">We'll confirm details within 48 hours.</p>
+      <h3>You're on the waitlist.</h3>
+      <p style="font-size:15px;">We'll get in touch as soon as a private desk opens up.</p>
     </div>
   </div>
 </div>
