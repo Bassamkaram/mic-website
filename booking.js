@@ -285,10 +285,29 @@
   }
 
   /* ---------------------------------------------------------- submit -- */
+  function showDone(phone) {
+    $('bkApp').hidden = true;
+    $('bkDone').hidden = false;
+    $('bkDoneTitle').textContent = state.waitlist ? 'You are on the waitlist.' : 'Request received.';
+    $('bkDoneText').textContent = state.waitlist
+      ? 'If that booking is cancelled we will contact you first' + (phone ? ', on ' + phone : '') +
+        '. Nothing is charged for a waitlist place.'
+      : 'We will confirm ' + (state.room === 'meeting' ? 'the meeting room' : 'the workshop room') +
+        ' for ' + prettyDate(state.date) + ' within one working day, by email and phone. ' +
+        'Nothing is charged until you agree the final figure.';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   function submit(e) {
     e.preventDefault();
     var btn = $('bkSubmit');
-    if ($('bkForm').querySelector('[name="website"]').value) return;   // honeypot
+    msg('', '');   // clear any earlier error, so a stale one can never look like a fresh one
+
+    // Spam trap. The field is off-screen, untabbable and named so that no browser
+    // autofill recognises it, so a real person cannot trip it. If something does,
+    // show the normal confirmation rather than a clue.
+    var trap = $('bkForm').querySelector('[name="mic_hp_leave_blank"]');
+    if (trap && trap.value) { showDone(''); return; }
 
     var name = $('bkName').value.trim(), email = $('bkEmail').value.trim(),
         phone = $('bkPhone').value.trim(), heads = headcount();
@@ -329,14 +348,7 @@
       .then(function (r) {
         if (r.status === 409) throw new Error('taken');
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        $('bkApp').hidden = true;
-        $('bkDone').hidden = false;
-        $('bkDoneTitle').textContent = state.waitlist ? 'You are on the waitlist.' : 'Request received.';
-        $('bkDoneText').textContent = state.waitlist
-          ? 'If that booking is cancelled we will contact you first, on ' + phone + '. Nothing is charged for a waitlist place.'
-          : 'We will confirm ' + (state.room === 'meeting' ? 'the meeting room' : 'the workshop room') +
-            ' for ' + prettyDate(state.date) + ' within one working day, by email and phone. Nothing is charged until you agree the final figure.';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showDone(phone);
       })
       .catch(function (err) {
         btn.disabled = false; btn.textContent = 'Request this booking →';

@@ -114,7 +114,7 @@ function renderForm(ev){
       <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="40" placeholder="71 123 456">
       <label for="feedback">Your feedback <span>(optional)</span></label>
       <textarea id="feedback" name="feedback" maxlength="2000" placeholder="Anything you would like the organizers to know"></textarea>
-      <input class="hp" name="website" tabindex="-1" autocomplete="off">
+      <input class="hp" name="mic_hp_leave_blank" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
       <button type="submit" id="submit">Submit</button>
       <div class="err" id="err"></div>
     </form>`;
@@ -147,7 +147,7 @@ document.addEventListener('submit', async e => {
   const f = e.target, err = document.getElementById('err'), btn = document.getElementById('submit');
   const v = n => (f.elements.namedItem(n)?.value || '');
   err.className = 'err';
-  if(v('website')) return;                            /* honeypot */
+  if(v('mic_hp_leave_blank')) return;                 /* honeypot: a name no autofill recognises */
   const data = {
     event_id: window.__event.id,
     full_name: v('full_name').trim(),
