@@ -284,6 +284,44 @@
     else el.textContent = '';
   }
 
+  /* ------------------------------------------------- email the team -- */
+  /* Netlify Forms already powers every other form on the site, so a booking
+     that has safely reached the database is copied here purely so Netlify
+     can email it out. Deliberately fire-and-forget: the booking is already
+     saved, and a failure to send the notification must never be shown to the
+     person or undo anything. */
+  function notifyTeam(name, email, phone) {
+    try {
+      var cat = CATERING[cateringChoice()];
+      var people = headcount();
+      var time = state.room === 'workshop'
+        ? (state.slots.length === 2 ? 'Full day (08:00-20:00)' : slotLabel(state.slots[0]))
+        : state.slots.map(function (s) { return s + ':00'; }).join(', ') + '  (' + state.slots.length + 'h)';
+      var money = state.waitlist ? 'waitlist, no charge'
+        : (cateringChoice() === 'meal' ? '$' + priceRooms() + ' + meal on request'
+                                       : '$' + (priceRooms() + ((cat.pp && people) ? cat.pp * people : 0)));
+      var body = {
+        'form-name': 'room-booking',
+        room:     state.room === 'meeting' ? 'Meeting Room' : 'Workshop Room',
+        date:     prettyDate(state.date),
+        time:     time,
+        request:  state.waitlist ? 'WAITLIST request' : 'Booking request',
+        name:     name, email: email, phone: phone,
+        org:      $('bkOrg').value.trim() || '-',
+        people:   String(people),
+        setup:    state.setup ? (state.setup === 'ushape' ? 'U-shape' : 'Classroom') : '-',
+        catering: cat.label + (cat.pp && people ? ' x' + people : ''),
+        estimate: money,
+        notes:    $('bkNotes').value.trim() || '-'
+      };
+      fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(body).toString()
+      }).catch(function () {});
+    } catch (_) {}
+  }
+
   /* ---------------------------------------------------------- submit -- */
   function showDone(phone) {
     $('bkApp').hidden = true;
@@ -348,6 +386,7 @@
       .then(function (r) {
         if (r.status === 409) throw new Error('taken');
         if (!r.ok) throw new Error('HTTP ' + r.status);
+        notifyTeam(name, email, phone);
         showDone(phone);
       })
       .catch(function (err) {

@@ -415,7 +415,14 @@
       });
     });
     ['addRoom','addDate','addHeads','addCat'].forEach(function (id) {
-      $(id).addEventListener('change', function () { if (id === 'addRoom' || id === 'addDate') add.slots = []; renderAdd(); });
+      $(id).addEventListener('change', function () {
+        if (id === 'addRoom' || id === 'addDate') add.slots = [];
+        if (id === 'addRoom') {   // setup belongs to the workshop room only
+          add.setup = null;
+          document.querySelectorAll('#addSetup [data-s]').forEach(function (o) { o.setAttribute('aria-pressed', 'false'); });
+        }
+        renderAdd();
+      });
       $(id).addEventListener('input',  function () { renderAdd(); });
     });
     $('addGo').addEventListener('click', addGo);

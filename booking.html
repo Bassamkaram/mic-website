@@ -255,6 +255,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
+
+<!-- Netlify picks its form fields up from this static declaration. It is never
+     shown and never submitted by hand: booking.js posts a copy here after a
+     booking reaches the database, so Netlify can email the team. -->
+<form name="room-booking" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+  <input type="hidden" name="form-name" value="room-booking"/>
+  <input type="text" name="bot-field"/>
+  <input type="text" name="room"/>
+  <input type="text" name="date"/>
+  <input type="text" name="time"/>
+  <input type="text" name="request"/>
+  <input type="text" name="name"/>
+  <input type="email" name="email"/>
+  <input type="tel"  name="phone"/>
+  <input type="text" name="org"/>
+  <input type="text" name="people"/>
+  <input type="text" name="setup"/>
+  <input type="text" name="catering"/>
+  <input type="text" name="estimate"/>
+  <textarea name="notes"></textarea>
+</form>
+
 <footer class="footer">
   <div class="container">
     <div class="footer-grid">
