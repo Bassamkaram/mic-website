@@ -69,42 +69,134 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <!-- console -->
   <div id="admPanel" hidden>
     <div class="adm-tabs" id="admTabs">
-      <button class="adm-tab" data-view="pending"   aria-pressed="true">Pending <span class="c" id="cPending">0</span></button>
+      <button class="adm-tab" data-view="calendar"  aria-pressed="true">Calendar</button>
+      <button class="adm-tab" data-view="pending"   aria-pressed="false">Pending <span class="c" id="cPending">0</span></button>
       <button class="adm-tab" data-view="waitlist"  aria-pressed="false">Waitlist <span class="c" id="cWait">0</span></button>
       <button class="adm-tab" data-view="confirmed" aria-pressed="false">Confirmed <span class="c" id="cConf">0</span></button>
       <button class="adm-tab" data-view="all"       aria-pressed="false">Everything</button>
-      <button class="adm-tab" data-view="block"     aria-pressed="false">Block a slot</button>
+      <button class="adm-tab" data-view="add"       aria-pressed="false">+ Add booking</button>
     </div>
 
-    <div id="admBlock" hidden>
-      <div class="bk-panel" style="max-width:520px;">
-        <p class="bk-muted" style="margin-bottom:14px;">
-          Close a slot that was booked by phone or WhatsApp, or hold one for maintenance. It will show
-          as taken on the public calendar straight away.
-        </p>
+    <!-- ============ calendar ============ -->
+    <div id="admCal" hidden>
+      <div class="adm-calwrap">
+        <div class="bk-cal adm-cal">
+          <div class="bk-cal-top">
+            <strong id="admMonth">&nbsp;</strong>
+            <div class="bk-nav">
+              <button type="button" id="admPrev" aria-label="Previous month">&#8249;</button>
+              <button type="button" id="admToday" style="width:auto;padding:0 12px;font-size:12px;">Today</button>
+              <button type="button" id="admNext" aria-label="Next month">&#8250;</button>
+            </div>
+          </div>
+          <div class="adm-roomfilter">
+            <button type="button" data-rf="all"      aria-pressed="true">Both rooms</button>
+            <button type="button" data-rf="meeting"  aria-pressed="false">Meeting</button>
+            <button type="button" data-rf="workshop" aria-pressed="false">Workshop</button>
+          </div>
+          <div class="bk-grid" id="admDow"></div>
+          <div class="bk-grid" id="admDays"></div>
+          <div class="bk-key">
+            <span><i style="background:var(--amber)"></i>Pending</span>
+            <span><i style="background:var(--cedar-light)"></i>Confirmed</span>
+            <span><i style="background:var(--blue)"></i>Blocked</span>
+            <span><i style="background:var(--rose)"></i>Waitlist</span>
+          </div>
+        </div>
+        <div class="adm-dayview" id="admDayView">
+          <p class="bk-muted">Pick a day to see what is booked.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ add a booking ============ -->
+    <div id="admAdd" hidden>
+      <div class="bk-panel" style="max-width:640px;">
+        <div class="bk-field" style="margin-bottom:14px;">
+          <label>What is this?</label>
+          <div class="bk-setup" id="addKind">
+            <button type="button" data-kind="booking" aria-pressed="true">A booking<span>taken by phone, email or in person</span></button>
+            <button type="button" data-kind="blocked" aria-pressed="false">Close the room<span>maintenance, private use, holiday</span></button>
+          </div>
+        </div>
+
         <div class="bk-row">
           <div class="bk-field">
-            <label for="blkRoom">Room</label>
-            <select id="blkRoom"><option value="meeting">Meeting Room</option><option value="workshop">Workshop Room</option></select>
+            <label for="addRoom">Room</label>
+            <select id="addRoom"><option value="meeting">Meeting Room</option><option value="workshop">Workshop Room</option></select>
           </div>
           <div class="bk-field">
-            <label for="blkDate">Date</label>
-            <input id="blkDate" type="date"/>
+            <label for="addDate">Date</label>
+            <input id="addDate" type="date"/>
           </div>
         </div>
+
+        <div class="bk-field" style="margin-bottom:14px;">
+          <label>Time <span class="bk-muted" id="addSlotHint">pick one or more</span></label>
+          <div id="addSlots" class="bk-slots"></div>
+        </div>
+
+        <div id="addWho">
+          <div class="bk-row">
+            <div class="bk-field">
+              <label for="addName">Name</label>
+              <input id="addName" type="text" maxlength="120" placeholder="Who the room is for"/>
+            </div>
+            <div class="bk-field">
+              <label for="addPhone">Phone</label>
+              <input id="addPhone" type="tel" maxlength="40" placeholder="71 123 456"/>
+            </div>
+          </div>
+          <div class="bk-row">
+            <div class="bk-field">
+              <label for="addEmail">Email <span class="bk-muted">(optional)</span></label>
+              <input id="addEmail" type="email" maxlength="200" placeholder="Optional"/>
+            </div>
+            <div class="bk-field">
+              <label for="addOrg">Company <span class="bk-muted">(optional)</span></label>
+              <input id="addOrg" type="text" maxlength="120" placeholder="Optional"/>
+            </div>
+          </div>
+          <div class="bk-row" id="addSetupRow" hidden>
+            <div class="bk-field" style="grid-column:1/-1;">
+              <label>Setup</label>
+              <div class="bk-setup" id="addSetup">
+                <button type="button" data-s="ushape" aria-pressed="false">U&#8209;shape<span>up to 30</span></button>
+                <button type="button" data-s="classroom" aria-pressed="false">Classroom<span>up to 40</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="bk-row">
+            <div class="bk-field">
+              <label for="addHeads">People</label>
+              <input id="addHeads" type="number" min="1" max="40" placeholder="e.g. 10"/>
+              <div class="hint" id="addCapHint"></div>
+            </div>
+            <div class="bk-field">
+              <label for="addCat">Refreshments</label>
+              <select id="addCat">
+                <option value="none">None</option>
+                <option value="refreshments">Refreshments &mdash; $3 pp</option>
+                <option value="coffee_break">Coffee break &mdash; $5 pp</option>
+                <option value="premium">Premium coffee break &mdash; $10 pp</option>
+                <option value="meal">Meal break &mdash; on request</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <div class="bk-row bk-row--1">
           <div class="bk-field">
-            <label for="blkSlot">Slot</label>
-            <select id="blkSlot"></select>
+            <label for="addNote">Note <span class="bk-muted">(only you see this)</span></label>
+            <input id="addNote" type="text" maxlength="200" placeholder="Paid in cash / holding for Amanda / annual maintenance"/>
           </div>
         </div>
-        <div class="bk-row bk-row--1">
-          <div class="bk-field">
-            <label for="blkNote">Reason <span class="bk-muted">(for your own records)</span></label>
-            <input id="blkNote" type="text" maxlength="200" placeholder="Booked by phone / maintenance"/>
-          </div>
+
+        <div class="bk-line" style="padding:10px 0 14px;border-top:1px solid var(--line);margin-top:4px;">
+          <span>Estimated charge</span><span id="addTotal">&mdash;</span>
         </div>
-        <button class="btn btn--primary" id="blkGo">Close this slot</button>
+        <button class="btn btn--primary btn--block" id="addGo">Add to the calendar</button>
+        <p class="bk-note">This goes straight in as confirmed, so the slot closes on the public calendar immediately.</p>
       </div>
     </div>
 

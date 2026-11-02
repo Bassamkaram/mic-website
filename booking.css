@@ -206,3 +206,44 @@
 .adm-pill.cancelled { background: rgba(110,129,120,.14); color: var(--ink-mute); }
 .adm-pill.blocked   { background: rgba(37,99,235,.10);  color: var(--blue); }
 .adm-pill.waitlist  { background: rgba(194,65,12,.10);  color: var(--rose); }
+
+/* ---------- admin: calendar + add booking ---------- */
+.adm-calwrap { display: grid; grid-template-columns: 520px 1fr; gap: 26px; align-items: start; }
+@media (max-width: 1000px) { .adm-calwrap { grid-template-columns: 1fr; } }
+
+.adm-roomfilter { display: flex; gap: 6px; margin-bottom: 12px; }
+.adm-roomfilter button {
+  flex: 1; padding: 7px 10px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12.5px;
+  border: 1px solid var(--line); background: var(--bg-soft); color: var(--ink-soft);
+}
+.adm-roomfilter button[aria-pressed="true"] { background: var(--cedar); border-color: var(--cedar); color: var(--on-dark); }
+
+.adm-cal .bk-day { aspect-ratio: 1; align-content: center; }
+.adm-cal .bk-day .dots {
+  position: absolute; bottom: 5px; left: 0; right: 0;
+  display: flex; justify-content: center; gap: 2px;
+}
+.adm-cal .bk-day .dots i { width: 5px; height: 5px; border-radius: 50%; display: block; }
+.adm-cal .bk-day:disabled { opacity: .55; }          /* past days still readable */
+.adm-cal .bk-day.is-past { opacity: .45; }
+
+.adm-dayview { min-height: 200px; }
+.adm-dayview h3 {
+  font-family: var(--serif); font-size: 20px; color: var(--cedar); margin: 0 0 4px;
+}
+.adm-dayview .sub { font-size: 13px; color: var(--ink-mute); margin-bottom: 14px; }
+.adm-slotrow {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--paper); margin-bottom: 7px; font-size: 13.5px;
+}
+.adm-slotrow .t { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--cedar); min-width: 92px; }
+.adm-slotrow .who { flex: 1; color: var(--ink); }
+.adm-slotrow .who small { display: block; color: var(--ink-mute); font-size: 12px; }
+.adm-slotrow .acts { display: flex; gap: 6px; }
+.adm-slotrow .acts button {
+  padding: 5px 10px; border-radius: 7px; cursor: pointer; font: inherit; font-size: 12px;
+  border: 1px solid var(--line); background: var(--bg-soft); color: var(--ink);
+}
+.adm-slotrow .acts .ok { background: var(--cedar); border-color: var(--cedar); color: var(--on-dark); }
+.adm-slotrow .acts .no { color: var(--rose); border-color: rgba(194,65,12,.3); }
