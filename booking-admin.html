@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#183D31" />
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-WMMGBC8G');</script>
+<!-- End Google Tag Manager -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18478405754"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-18478405754');
+</script>
+<title>Bookings — MIC admin</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="icon" type="image/png" href="mic-icon-128.png" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="booking.css" />
+</head>
+<body>
+<header class="nav-wrap">
+  <nav class="nav" aria-label="Main">
+    <a href="index.html" class="nav-brand"><img src="mic-lockup-horizontal.png" alt="Metn Innovation Campus — MIC"/></a>
+    <div class="nav-links"><a href="booking.html">Public booking page</a></div>
+    <div class="nav-cta">
+      <button class="btn btn--ghost" id="admOut" hidden style="padding:8px 16px;font-size:13px;">Sign out</button>
+    </div>
+  </nav>
+</header>
+
+<section class="bk-head">
+  <div class="container">
+    <span class="eyebrow"><span class="num">&rarr;</span> Staff only</span>
+    <h1>Room <em>bookings</em>.</h1>
+  </div>
+</section>
+
+<section class="container bk-wrap">
+  <div id="admMsg"></div>
+
+  <!-- sign in -->
+  <div class="bk-panel adm-login" id="admLogin">
+    <h3 style="font-family:var(--serif);font-size:22px;color:var(--cedar);margin:0 0 4px;">Sign in</h3>
+    <p class="bk-muted" style="margin-bottom:16px;">Use your MIC staff account.</p>
+    <form id="admForm">
+      <div class="bk-field" style="margin-bottom:12px;">
+        <label for="admEmail">Email</label>
+        <input id="admEmail" type="email" required autocomplete="username"/>
+      </div>
+      <div class="bk-field" style="margin-bottom:16px;">
+        <label for="admPass">Password</label>
+        <input id="admPass" type="password" required autocomplete="current-password"/>
+      </div>
+      <button class="btn btn--primary btn--block" id="admGo" type="submit">Sign in</button>
+    </form>
+  </div>
+
+  <!-- console -->
+  <div id="admPanel" hidden>
+    <div class="adm-tabs" id="admTabs">
+      <button class="adm-tab" data-view="pending"   aria-pressed="true">Pending <span class="c" id="cPending">0</span></button>
+      <button class="adm-tab" data-view="waitlist"  aria-pressed="false">Waitlist <span class="c" id="cWait">0</span></button>
+      <button class="adm-tab" data-view="confirmed" aria-pressed="false">Confirmed <span class="c" id="cConf">0</span></button>
+      <button class="adm-tab" data-view="all"       aria-pressed="false">Everything</button>
+      <button class="adm-tab" data-view="block"     aria-pressed="false">Block a slot</button>
+    </div>
+
+    <div id="admBlock" hidden>
+      <div class="bk-panel" style="max-width:520px;">
+        <p class="bk-muted" style="margin-bottom:14px;">
+          Close a slot that was booked by phone or WhatsApp, or hold one for maintenance. It will show
+          as taken on the public calendar straight away.
+        </p>
+        <div class="bk-row">
+          <div class="bk-field">
+            <label for="blkRoom">Room</label>
+            <select id="blkRoom"><option value="meeting">Meeting Room</option><option value="workshop">Workshop Room</option></select>
+          </div>
+          <div class="bk-field">
+            <label for="blkDate">Date</label>
+            <input id="blkDate" type="date"/>
+          </div>
+        </div>
+        <div class="bk-row bk-row--1">
+          <div class="bk-field">
+            <label for="blkSlot">Slot</label>
+            <select id="blkSlot"></select>
+          </div>
+        </div>
+        <div class="bk-row bk-row--1">
+          <div class="bk-field">
+            <label for="blkNote">Reason <span class="bk-muted">(for your own records)</span></label>
+            <input id="blkNote" type="text" maxlength="200" placeholder="Booked by phone / maintenance"/>
+          </div>
+        </div>
+        <button class="btn btn--primary" id="blkGo">Close this slot</button>
+      </div>
+    </div>
+
+    <div id="admList"></div>
+  </div>
+</section>
+
+<script src="booking-admin.js"></script>
+</body>
+</html>

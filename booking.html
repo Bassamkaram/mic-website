@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#183D31" />
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-WMMGBC8G');</script>
+<!-- End Google Tag Manager -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18478405754"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-18478405754');
+</script>
+<title>Book a Room — Metn Innovation Campus</title>
+<meta name="description" content="Check live availability and book the meeting room or workshop room at Metn Innovation Campus in Jdeideh. Hourly and half-day slots, catering options, instant request." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="icon" type="image/png" href="mic-icon-128.png" />
+<link rel="apple-touch-icon" href="mic-icon-128.png" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="booking.css" />
+<!-- Plausible Analytics -->
+<script defer data-domain="mic-lb.com" src="https://plausible.io/js/script.js"></script>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WMMGBC8G"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="arr" viewBox="0 0 16 16"><path d="M 4 12 L 12 4 M 6 4 L 12 4 L 12 10" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="close" viewBox="0 0 16 16"><path d="M 4 4 L 12 12 M 12 4 L 4 12" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="M 5 12 L 10 17 L 19 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav-wrap">
+  <nav class="nav" aria-label="Main">
+    <a href="index.html" class="nav-brand"><img src="mic-lockup-horizontal.png" alt="Metn Innovation Campus — MIC"/></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <div class="nav-item nav-item--has-dropdown">
+        <a href="programs.html">Programs<svg class="nav-caret" width="9" height="6" viewBox="0 0 9 6" aria-hidden="true"><path d="M1 1l3.5 4L8 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <div class="nav-dropdown" role="menu">
+          <div class="nav-dropdown-inner">
+            <a href="programs.html#pre-incubation" role="menuitem">Pre-incubation</a>
+            <a href="programs.html#incubation" role="menuitem">Incubation</a>
+            <a href="programs.html#acceleration" role="menuitem">Acceleration</a>
+          </div>
+        </div>
+      </div>
+      <a href="services.html">Services</a>
+      <a href="events.html">Events</a>
+      <a href="blog.html">Blog</a>
+      <a href="about.html">About us</a>
+    </div>
+    <div class="nav-cta">
+      <button class="nav-tour" data-modal="modal-tour" aria-label="Take a virtual tour">
+        <span class="dot" aria-hidden="true"></span>
+        Virtual tour
+      </button>
+      <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <a href="index.html">Home</a>
+  <a href="programs.html">Programs</a>
+  <a href="programs.html#pre-incubation" class="sub">Pre-incubation</a>
+  <a href="programs.html#incubation" class="sub">Incubation</a>
+  <a href="programs.html#acceleration" class="sub">Acceleration</a>
+  <a href="services.html">Services</a>
+  <a href="events.html">Events</a>
+  <a href="blog.html">Blog</a>
+  <a href="about.html">About us</a>
+  <div class="mobile-actions">
+    <button class="btn btn--ghost" data-modal="modal-tour">Virtual tour</button>
+  </div>
+</div>
+
+<section class="bk-head">
+  <div class="container">
+    <span class="eyebrow"><span class="num">&rarr;</span> Book a room</span>
+    <h1>Meeting room and <em>workshop room</em>.</h1>
+    <p>
+      Pick a room, pick a date, and the calendar shows you what is still free. Rooms are available
+      around the clock. We confirm every request within one working day, and nothing is charged
+      before we do.
+    </p>
+  </div>
+</section>
+
+<section class="container bk-wrap">
+  <div id="bkApp" class="bk-cols">
+
+    <div>
+      <div id="bkMsg"></div>
+
+      <!-- 1 room -->
+      <div class="bk-step">
+        <div class="bk-step-label"><span class="n">1</span> Choose a room</div>
+        <div class="bk-rooms">
+          <button type="button" class="bk-room" data-room="meeting" aria-pressed="false">
+            <img src="pkg-meeting.jpg" alt="The meeting room at MIC" loading="lazy"/>
+            <div class="b">
+              <h3>Meeting Room</h3>
+              <div class="meta">Up to 15 people. Smart screen and whiteboard. Booked by the hour.</div>
+              <div class="rate">$20 <span>/ hour</span></div>
+            </div>
+          </button>
+          <button type="button" class="bk-room" data-room="workshop" aria-pressed="false">
+            <img src="pkg-workshop.jpg" alt="The workshop room at MIC" loading="lazy"/>
+            <div class="b">
+              <h3>Workshop Room</h3>
+              <div class="meta">Up to 30 in U&#8209;shape or 40 classroom. Reconfigurable and AV&#8209;equipped. Booked by the half&#8209;day.</div>
+              <div class="rate">$100 <span>/ half-day &middot; $200 / full day</span></div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2 date -->
+      <div class="bk-step" id="bkStepDate" hidden>
+        <div class="bk-step-label"><span class="n">2</span> Pick a date</div>
+        <div class="bk-cal">
+          <div class="bk-cal-top">
+            <strong id="bkMonth">&nbsp;</strong>
+            <div class="bk-nav">
+              <button type="button" id="bkPrev" aria-label="Previous month">&#8249;</button>
+              <button type="button" id="bkNext" aria-label="Next month">&#8250;</button>
+            </div>
+          </div>
+          <div class="bk-grid" id="bkDow"></div>
+          <div class="bk-grid" id="bkDays"></div>
+          <div class="bk-key">
+            <span><i style="background:var(--amber)"></i>Partly booked</span>
+            <span><i style="background:var(--rose)"></i>Fully booked</span>
+            <span><i style="background:var(--cedar)"></i>Selected</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 slots -->
+      <div class="bk-step" id="bkStepSlots" hidden>
+        <div class="bk-step-label"><span class="n">3</span> Pick your time</div>
+        <div class="bk-panel">
+          <p class="bk-muted" id="bkSlotHint" style="margin-bottom:12px;"></p>
+          <div id="bkSlots" class="bk-slots"></div>
+        </div>
+      </div>
+
+      <!-- 4 details -->
+      <div class="bk-step" id="bkStepForm" hidden>
+        <div class="bk-step-label"><span class="n">4</span> Your details</div>
+        <div class="bk-panel">
+          <form id="bkForm" novalidate>
+            <div class="bk-row">
+              <div class="bk-field">
+                <label for="bkName">Full name</label>
+                <input id="bkName" name="name" type="text" required maxlength="120" autocomplete="name" placeholder="Your name"/>
+              </div>
+              <div class="bk-field">
+                <label for="bkPhone">Phone</label>
+                <input id="bkPhone" name="phone" type="tel" required maxlength="40" autocomplete="tel" placeholder="71 123 456"/>
+              </div>
+            </div>
+            <div class="bk-row">
+              <div class="bk-field">
+                <label for="bkEmail">Email</label>
+                <input id="bkEmail" name="email" type="email" required maxlength="200" autocomplete="email" placeholder="you@email.com"/>
+              </div>
+              <div class="bk-field">
+                <label for="bkOrg">Company or team <span class="bk-muted">(optional)</span></label>
+                <input id="bkOrg" name="org" type="text" maxlength="120" autocomplete="organization" placeholder="Optional"/>
+              </div>
+            </div>
+
+            <div class="bk-row" id="bkSetupRow" hidden>
+              <div class="bk-field" style="grid-column:1/-1;">
+                <label>Room setup</label>
+                <div class="bk-setup">
+                  <button type="button" data-setup="ushape" aria-pressed="false">U&#8209;shape<span>up to 30</span></button>
+                  <button type="button" data-setup="classroom" aria-pressed="false">Classroom<span>up to 40</span></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="bk-row">
+              <div class="bk-field">
+                <label for="bkHeads">How many people</label>
+                <input id="bkHeads" name="headcount" type="number" min="1" max="40" required placeholder="e.g. 12"/>
+                <div class="hint" id="bkCapHint"></div>
+              </div>
+              <div class="bk-field">
+                <label for="bkCatering">Refreshments</label>
+                <select id="bkCatering" name="catering">
+                  <option value="none">None</option>
+                  <option value="refreshments">Refreshments &mdash; coffee, tea and water &mdash; $3 per person</option>
+                  <option value="coffee_break">Coffee break &mdash; refreshments plus sweet and salty bites &mdash; $5 per person</option>
+                  <option value="premium">Premium coffee break &mdash; $10 per person</option>
+                  <option value="meal">Meal break &mdash; breakfast, lunch or dinner &mdash; price on request</option>
+                </select>
+                <div class="hint" id="bkCatHint"></div>
+              </div>
+            </div>
+
+            <div class="bk-row bk-row--1">
+              <div class="bk-field">
+                <label for="bkNotes">Anything we should set up <span class="bk-muted">(optional)</span></label>
+                <textarea id="bkNotes" name="notes" rows="3" maxlength="2000" placeholder="Projector, flipchart, a particular layout, an arrival time outside normal hours&hellip;"></textarea>
+              </div>
+            </div>
+
+            <div class="bk-hp"><label>Leave this empty <input name="website" tabindex="-1" autocomplete="off"/></label></div>
+            <button type="submit" class="btn btn--primary btn--block" id="bkSubmit">Request this booking &rarr;</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- summary -->
+    <aside class="bk-sum" id="bkSummary" hidden>
+      <h3>Your booking</h3>
+      <div id="bkSumBody"></div>
+      <div class="bk-total">
+        <small>Estimated total</small>
+        <b id="bkTotal">&mdash;</b>
+      </div>
+      <p class="bk-note" id="bkTotalNote">
+        An estimate, not an invoice. We confirm availability and the final figure within one working
+        day, and nothing is charged before you agree it.
+      </p>
+    </aside>
+  </div>
+
+  <div id="bkDone" class="bk-done" hidden>
+    <div class="tick"><svg width="30" height="30" viewBox="0 0 24 24"><path d="M 5 12 L 10 17 L 19 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h2 id="bkDoneTitle">Request received.</h2>
+    <p id="bkDoneText"></p>
+    <p style="margin-top:18px;"><a class="btn btn--ghost" href="booking.html">Make another booking</a></p>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-brand"><img src="mic-icon-white.png" alt="MIC icon"/>Metn Innovation Campus</div>
+        <p>A campus, community and set of programs for people building the next generation of real business leaders from Lebanon.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Explore</h5>
+        <ul>
+          <li><a href="index.html#coworking">Coworking</a></li>
+          <li><a href="index.html#offices">Team Offices</a></li>
+          <li><a href="programs.html">Programs</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="events.html">Events</a></li>
+          <li><a href="blog.html">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Visit</h5>
+        <ul>
+          <li>Jdeideh, Metn</li>
+          <li>Mount Lebanon</li>
+          <li>Mon–Fri · 8:00–20:00</li>
+          <li>Sat · 8:00–14:00</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="mailto:info@mic-lb.com">info@mic-lb.com</a></li>
+          <li><a href="tel:+96171040640">+961 71 040 640</a></li>
+          <li><a href="https://wa.me/96171040640" target="_blank" rel="noopener">WhatsApp: +961 71 040 640</a></li>
+          <li><a href="https://t.me/+96171040640" target="_blank" rel="noopener">Telegram: +961 71 040 640</a></li>
+        </ul>
+        <div class="footer-social">
+          <a href="https://www.linkedin.com/company/metninnovationcampus" target="_blank" rel="noopener" aria-label="LinkedIn">LinkedIn</a>
+          <a href="https://www.instagram.com/metninnovationcampus" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
+          <a href="https://www.youtube.com/@MetnInnovationCampus" target="_blank" rel="noopener" aria-label="YouTube">YouTube</a>
+          <a href="https://www.facebook.com/metninnovationcampus" target="_blank" rel="noopener" aria-label="Facebook">Facebook</a>
+          <a href="https://x.com/metninnovation" target="_blank" rel="noopener" aria-label="X">X</a>
+          <a href="https://www.tiktok.com/@metninnovationcampus" target="_blank" rel="noopener" aria-label="TikTok">TikTok</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Metn Innovation Campus. All rights reserved. · <a href="privacy.html">Privacy Policy</a></span>
+      <span>Built with <em>♥</em> in Lebanon</span>
+    </div>
+  </div>
+</footer>
+
+<script src="scripts.js"></script>
+<script src="booking.js"></script>
+</body>
+</html>

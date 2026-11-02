@@ -6,3 +6,5 @@ Allow: /
 
 # Sitemap location for efficient crawling
 Sitemap: https://mic-lb.com/sitemap.xml
+Disallow: /booking-admin
+Disallow: /booking-admin.html
