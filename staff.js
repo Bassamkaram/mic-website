@@ -16,8 +16,11 @@
 
   var SUPABASE_URL = 'https://xnegzvpuagxgahlbtzaf.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuZWd6dnB1YWd4Z2FobGJ0emFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODk0NDIsImV4cCI6MjA5Mzk2NTQ0Mn0.RXBD_LxrZiv0tQfX7W6S9wT8JKNMPd5xB3LBlV50lAE';
-  // The public half of the push key pair. The private half lives only on Netlify.
-  var VAPID_PUBLIC_KEY = 'BG3E_fPUadh2Cw5TVNKeoselK6GFY7dTcRQrsDHvL6jJrfUUB0oh5QhVSIf935TehXs8CwbGwc2ye7CQk0q76Yo';
+  // The public half of the push key pair comes from the server, so the pair can
+  // be replaced in Netlify without touching this file. The private half never
+  // leaves Netlify.
+  var NOTIFY_URL = '/.netlify/functions/notify-staff';
+  var vapidKey = null, keyCheckedAt = 0;
 
   var TZ = 'Asia/Beirut';
   var POLL_MS = 20000;
@@ -261,6 +264,7 @@
       }
       tasks = res[1] || []; bookings = res[2] || [];
       setSync('ok');
+      if (push.state === 'notset' && Date.now() - keyCheckedAt > 5 * 60000) checkPush();
       spotNew();
       render();
       if (focusAfterLoad) { var id = focusAfterLoad; focusAfterLoad = null; focusTask(id); }
@@ -569,7 +573,7 @@
     try {
       var k = sub.options && sub.options.applicationServerKey;
       if (!k) return true;
-      var a = new Uint8Array(k), b = keyBytes(VAPID_PUBLIC_KEY);
+      var a = new Uint8Array(k), b = keyBytes(vapidKey);
       if (a.length !== b.length) return false;
       for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
       return true;
@@ -578,6 +582,7 @@
 
   var PUSH_LABEL = {
     checking: 'Notifications…', on: 'Notifications on', off: 'Turn on notifications', denied: 'Notifications blocked',
+    notset: 'Notifications not set up',
     install: 'No notifications in Safari', unsupported: 'No notifications here', error: 'Notifications failed — tap to retry'
   };
   function setPush(state) {
@@ -597,13 +602,24 @@
       .catch(function (e) { console.error('Service worker did not register:', e); return null; });
   }
 
+  // Is sending set up on the server, and with which public key?
+  function fetchKey() {
+    keyCheckedAt = Date.now();
+    return fetch(NOTIFY_URL, { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (j) { vapidKey = j && j.ready && j.publicKey ? j.publicKey : null; return vapidKey; })
+      .catch(function () { return vapidKey; });
+  }
+
   // Works out where notifications stand, without asking anything.
   function checkPush() {
     if (isIOS() && !isInstalled()) { setPush('install'); return; }
     if (!pushSupported()) { setPush('unsupported'); return; }
     if (Notification.permission === 'denied') { setPush('denied'); return; }
-    (push.reg ? Promise.resolve(push.reg) : registerWorker()).then(function (reg) {
+    Promise.all([push.reg ? Promise.resolve(push.reg) : registerWorker(), fetchKey()]).then(function (got) {
+      var reg = got[0];
       if (!reg) { setPush('unsupported'); return; }
+      if (!got[1]) { setPush('notset'); return; }
       return navigator.serviceWorker.ready.then(function (r) { return r.pushManager.getSubscription(); }).then(function (sub) {
         if (sub && Notification.permission === 'granted' && sameKey(sub)) {
           // re-saved on every launch, so the database always knows this device
@@ -617,15 +633,20 @@
   // Must run inside a tap: browsers only show the permission prompt in answer to one.
   function turnOnPush() {
     if (!pushSupported() || !push.reg) return;
+    if (!vapidKey) { setPush('notset'); return; }
     var ask = Notification.permission === 'granted' ? Promise.resolve('granted') : Notification.requestPermission();
     setPush('checking');
     Promise.resolve(ask).then(function (perm) {
       if (perm !== 'granted') { setPush(perm === 'denied' ? 'denied' : 'off'); return; }
       return push.reg.pushManager.getSubscription().then(function (old) {
-        if (old && !sameKey(old)) return old.unsubscribe().then(function () { return null; });
+        if (old && !sameKey(old)) {
+          // made with an earlier key pair: useless now, so drop it here and in the database
+          api('/rest/v1/rpc/remove_push_subscription', { method: 'POST', body: JSON.stringify({ p_endpoint: old.endpoint }) }).catch(noop);
+          return old.unsubscribe().then(function () { return null; });
+        }
         return old;
       }).then(function (sub) {
-        return sub || push.reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID_PUBLIC_KEY) });
+        return sub || push.reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(vapidKey) });
       }).then(saveSub).then(function () {
         setPush('on');
         toast('Notifications are on. New tasks will reach this device even when the screen is off.');
@@ -655,6 +676,11 @@
       return;
     }
     if (s === 'install') { toast('To get notifications, add this page to the Home Screen: Share → Add to Home Screen. Then open it from there.', 8000); return; }
+    if (s === 'notset') {
+      toast('Notifications are not switched on for MIC yet. An admin does this once in the booking console, under Staff. New tasks still ring here while the screen is on.', 9000);
+      fetchKey().then(function (k) { if (k) checkPush(); });
+      return;
+    }
     if (s === 'unsupported') toast('This browser cannot receive notifications. Keep this screen open: new tasks still ring here.', 7000);
   }
 

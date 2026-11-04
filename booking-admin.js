@@ -566,7 +566,7 @@
       body: JSON.stringify({ task_id: id })
     }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) {
-        if (!r.ok) return 'The notification could not be sent (' + (j.error || 'error ' + r.status) + '). It still shows on the staff screen.';
+        if (!r.ok) return (j.error || 'The notification could not be sent (error ' + r.status + ').') + ' It still shows on the staff screen.';
         if (j.sent > 0) return (j.sent === 1 ? 'One device was' : j.sent + ' devices were') + ' notified.';
         if (j.devices > 0) return 'No device accepted the notification. It still shows on the staff screen.';
         return 'No staff device has notifications on yet, so it shows on the staff screen without a ping.';
@@ -796,8 +796,108 @@
     });
   }
 
+  /* ---------------------------------------------- notification setup -- */
+  // Sending notifications needs a key pair in Netlify. It is made here, in this
+  // browser, and shown once for the admin to paste into Netlify. It is never
+  // sent anywhere by this page, and never kept after the page closes.
+  var NOTIFY_URL = '/.netlify/functions/notify-staff';
+  var nt = { status: null, keys: null };
+
+  function b64uOf(bytes) {
+    var bin = ''; for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function bytesOf(b64u) {
+    var t = b64u.replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '=';
+    var raw = atob(t), out = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out;
+  }
+  function makeKeys() {
+    return crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify'])
+      .then(function (kp) { return crypto.subtle.exportKey('jwk', kp.privateKey); })
+      .then(function (jwk) {
+        var pub = new Uint8Array(65);
+        pub[0] = 4; pub.set(bytesOf(jwk.x), 1); pub.set(bytesOf(jwk.y), 33);
+        return { publicKey: b64uOf(pub), privateKey: jwk.d };
+      });
+  }
+  function checkNotify() {
+    return fetch(NOTIFY_URL, { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : { ready: false, problem: 'unreachable' }; })
+      .catch(function () { return { ready: false, problem: 'unreachable' }; })
+      .then(function (j) { nt.status = j; renderNotify(); });
+  }
+  function renderNotify() {
+    var body = $('ntBody'), st = nt.status;
+    if (!st) { body.innerHTML = '<p class="bk-muted">Checking&hellip;</p>'; return; }
+    if (st.ready && !nt.keys) {
+      body.innerHTML = '<p class="nt-ok">Notifications are set up. On the tablet, staff turn them on with <b>Start shift</b>.</p>' +
+        '<button type="button" class="tk-cancel" id="ntRedo" style="width:auto;padding:4px 0;">Replace the keys</button>';
+      $('ntRedo').addEventListener('click', function () { nt.keys = null; nt.status = { ready: false, problem: 'replace' }; renderNotify(); });
+      return;
+    }
+    var why = {
+      missing: 'So that new tasks reach the tablet even with its screen off, Netlify needs a pair of keys. This page makes them in your browser; they are not sent anywhere. You paste them into Netlify once.',
+      mismatch: 'The two keys in Netlify do not belong together, so notifications cannot be sent. Make a new pair and paste both again. Delete the old <b>VAPID_PUBLIC_KEY</b> and <b>VAPID_PRIVATE_KEY</b> in Netlify first.',
+      invalid: 'The key in Netlify is not valid. Make a new pair and paste both again. Delete the old <b>VAPID_PUBLIC_KEY</b> and <b>VAPID_PRIVATE_KEY</b> in Netlify first.',
+      replace: 'A new pair replaces the old one. Devices that already have notifications on will need to tap <b>Turn on notifications</b> once more on the tablet. Delete the old <b>VAPID_PUBLIC_KEY</b> and <b>VAPID_PRIVATE_KEY</b> in Netlify first.',
+      unreachable: 'Could not reach the notification service on the website. If the site was just updated, wait a minute and check again.'
+    }[st.problem] || 'Notifications are not set up yet.';
+    if (!nt.keys) {
+      body.innerHTML = '<p class="nt-why">' + why + '</p>' +
+        (st.problem === 'unreachable'
+          ? '<button type="button" class="btn btn--ghost" id="ntCheck">Check again</button>'
+          : '<button type="button" class="btn btn--primary" id="ntMake">Make the keys</button>');
+      var mk = $('ntMake'), ck = $('ntCheck');
+      if (ck) ck.addEventListener('click', function () { nt.status = null; renderNotify(); checkNotify(); });
+      if (mk) mk.addEventListener('click', function () {
+        if (!window.crypto || !crypto.subtle) { msg('err', 'This browser cannot make the keys. Try Chrome, Safari or Edge.'); return; }
+        mk.disabled = true;
+        makeKeys().then(function (k) { nt.keys = k; renderNotify(); })
+          .catch(function () { mk.disabled = false; msg('err', 'This browser could not make the keys. Try Chrome, Safari or Edge.'); });
+      });
+      return;
+    }
+    var env = 'VAPID_PUBLIC_KEY=' + nt.keys.publicKey + '\nVAPID_PRIVATE_KEY=' + nt.keys.privateKey;
+    body.innerHTML =
+      '<ol class="tk-steps nt-steps">' +
+        '<li>Copy these two lines.' +
+          '<textarea class="nt-env" id="ntEnv" readonly rows="2" spellcheck="false">' + esc(env) + '</textarea>' +
+          '<button type="button" class="btn btn--primary" id="ntCopy">Copy</button></li>' +
+        '<li>In Netlify, open the <b>micwebsite</b> project, then <b>Project configuration &rarr; Environment variables &rarr; Add a variable &rarr; Import from a .env file</b>. ' +
+          'Paste, tick <b>Contains secret values</b>, and import. <span class="bk-muted">(Or add them one at a time: the name is before the =, the value after it.)</span></li>' +
+        '<li>Then <b>Deploys &rarr; Trigger deploy &rarr; Deploy project</b>, and wait about a minute.</li>' +
+        '<li><button type="button" class="btn btn--ghost" id="ntCheck">Check it worked</button></li>' +
+      '</ol>' +
+      '<p class="bk-note">The second line is a secret: anyone with it could send notifications to your staff devices. ' +
+      'It only exists on this screen until you paste it into Netlify. If you close this page first, just make a new pair.</p>';
+    $('ntCopy').addEventListener('click', function () {
+      var done = function () { $('ntCopy').textContent = 'Copied'; setTimeout(function () { if ($('ntCopy')) $('ntCopy').textContent = 'Copy'; }, 2500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(env).then(done, function () { $('ntEnv').select(); });
+      else { $('ntEnv').select(); try { document.execCommand('copy'); done(); } catch (_) {} }
+    });
+    $('ntCheck').addEventListener('click', function () {
+      var b = $('ntCheck'); b.disabled = true; b.textContent = 'Checking…';
+      fetch(NOTIFY_URL, { cache: 'no-store' }).then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (j) {
+        if (j.ready && j.publicKey === nt.keys.publicKey) {
+          nt.keys = null; nt.status = j; renderNotify();
+          msg('ok', 'Notifications are set up. On the tablet, tap <b>Start shift</b> or <b>Turn on notifications</b>.');
+          return;
+        }
+        b.disabled = false; b.textContent = 'Check it worked';
+        msg('err', j.ready
+          ? 'Netlify still has the old keys. Delete the old VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in Netlify, import these, then deploy again.'
+          : j.problem === 'mismatch'
+            ? 'Netlify has two keys that do not belong together. Delete both VAPID variables in Netlify, import these two lines, then deploy again.'
+            : 'Not there yet. Check that both variables are saved in Netlify and that the new deploy has finished, then try again.');
+      });
+    });
+  }
+
   /* ------------------------------------------------------------ staff -- */
   function renderStaff() {
+    if (!nt.status) checkNotify(); else renderNotify();
     var box = $('stfList');
     $('stfGo').disabled = staff === null;
     if (staff === null) {

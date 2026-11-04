@@ -1,17 +1,22 @@
 // POST /.netlify/functions/notify-staff   { "task_id": "<uuid>" }
+//   Sends a push notification about one task to the staff who should see it.
+//   Called by the booking console straight after an admin creates a task.
 //
-// Sends a push notification about one task to the staff who should see it.
-// Called by the booking console straight after an admin creates a task.
+// GET /.netlify/functions/notify-staff
+//   { ready, publicKey } — whether sending is set up, and the public key the
+//   staff tablet subscribes with. Public information; no sign-in needed.
 //
 // It holds no database secret. It acts with the caller's own sign-in, so the
 // database decides everything: only an admin can read a task's push targets,
 // and a stranger calling this URL gets nothing but a 401 or 403.
 //
-// Needs three environment variables on Netlify:
-//   VAPID_PUBLIC_KEY   (65-byte P-256 point, base64url — also in staff.js)
+// Environment variables on Netlify. The pair is made in the admin's own
+// browser (console, Staff tab) and pasted in by them; nobody else handles it.
+//   VAPID_PUBLIC_KEY   (65-byte P-256 point, base64url)
 //   VAPID_PRIVATE_KEY  (32-byte P-256 scalar, base64url — secret)
-//   VAPID_SUBJECT      (mailto: address push services may contact)
+//   VAPID_SUBJECT      (optional mailto: address push services may contact)
 
+import crypto from 'node:crypto';
 import { sendPush } from './webpush.mjs';
 
 const SUPABASE_URL = 'https://xnegzvpuagxgahlbtzaf.supabase.co';
@@ -30,8 +35,31 @@ function dueText(iso) {
   } catch { return ''; }
 }
 
+// Are both keys there, and do they belong together? A pasting slip shows up
+// here, not as a mysterious refusal from Apple or Google later.
+function keyStatus() {
+  const pub = String(process.env.VAPID_PUBLIC_KEY || '').trim();
+  const priv = String(process.env.VAPID_PRIVATE_KEY || '').trim();
+  if (!pub || !priv) return { ready: false, problem: 'missing', pub, priv };
+  try {
+    const e = crypto.createECDH('prime256v1');
+    e.setPrivateKey(Buffer.from(priv, 'base64url'));
+    if (e.getPublicKey().toString('base64url') !== pub) return { ready: false, problem: 'mismatch', pub, priv };
+  } catch { return { ready: false, problem: 'invalid', pub, priv }; }
+  return { ready: true, pub, priv };
+}
+const NOT_READY = {
+  missing: 'Notifications are not set up yet. Finish the setup in the console, under Staff.',
+  mismatch: 'The two notification keys in Netlify do not belong together. Make a new pair in the console, under Staff, and paste both again.',
+  invalid: 'The notification key in Netlify is not valid. Make a new pair in the console, under Staff.',
+};
+
 export default async (req) => {
-  if (req.method !== 'POST') return json(405, { error: 'POST only' });
+  if (req.method === 'GET') {
+    const k = keyStatus();
+    return json(200, k.ready ? { ready: true, publicKey: k.pub } : { ready: false, problem: k.problem });
+  }
+  if (req.method !== 'POST') return json(405, { error: 'GET or POST only' });
 
   const auth = req.headers.get('authorization') || '';
   if (!/^Bearer\s+\S+$/.test(auth)) return json(401, { error: 'Sign in first.' });
@@ -43,12 +71,13 @@ export default async (req) => {
     return json(400, { error: 'task_id is required.' });
   }
 
+  const k = keyStatus();
+  if (!k.ready) return json(503, { error: NOT_READY[k.problem] });
   const vapid = {
-    publicKey: process.env.VAPID_PUBLIC_KEY,
-    privateKey: process.env.VAPID_PRIVATE_KEY,
-    subject: process.env.VAPID_SUBJECT || 'mailto:info@mic-lb.com',
+    publicKey: k.pub,
+    privateKey: k.priv,
+    subject: String(process.env.VAPID_SUBJECT || '').trim() || 'mailto:info@mic-lb.com',
   };
-  if (!vapid.publicKey || !vapid.privateKey) return json(500, { error: 'Push notifications are not configured on the server.' });
 
   const h = { apikey: SUPABASE_ANON_KEY, Authorization: auth, 'Content-Type': 'application/json' };
   const rest = (path, opts = {}) => fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: h, ...opts });

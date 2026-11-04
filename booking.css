@@ -392,3 +392,13 @@
 .adm-pill.admin  { background: rgba(27,67,50,.12); color: var(--cedar); }
 .adm-pill.viewer { background: rgba(37,99,235,.10); color: var(--blue); }
 .adm-pill.off    { background: rgba(110,129,120,.14); color: var(--ink-mute); }
+.nt-box { max-width: 760px; margin-bottom: 22px; }
+.nt-why { margin: 0 0 14px; font-size: 14px; line-height: 1.6; color: var(--ink-soft); max-width: 64ch; }
+.nt-ok { margin: 0 0 6px; font-size: 14px; color: var(--cedar); }
+.nt-ok::before { content: '\2713'; display: inline-block; margin-right: 8px; font-weight: 700; }
+.nt-steps li { margin-bottom: 12px; }
+.nt-env {
+  display: block; width: 100%; margin: 8px 0; padding: 10px 12px; resize: none;
+  font: 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ink);
+  background: var(--bg-soft); border: 1px solid var(--line); border-radius: 10px; white-space: pre; overflow-x: auto;
+}
