@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#183D31" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="MIC Staff" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<title>MIC Staff</title>
+<link rel="manifest" href="/staff.webmanifest" />
+<link rel="icon" type="image/png" href="/mic-icon-128.png" />
+<link rel="apple-touch-icon" href="/staff-icon-180.png" />
+<link rel="stylesheet" href="/styles.css" />
+<link rel="stylesheet" href="/booking.css" />
+<link rel="stylesheet" href="/staff.css" />
+</head>
+<body class="staff">
+
+<!-- ============ iPad / iPhone in Safari: install first ============ -->
+<div class="st-cover" id="stInstall" hidden>
+  <div class="st-card">
+    <img class="logo" src="/mic-lockup-horizontal.png" alt="Metn Innovation Campus" />
+    <h1>Add MIC Staff to the Home Screen</h1>
+    <p class="lead">An iPad only shows notifications for apps on its Home Screen. You do this once, and it takes a few seconds.</p>
+    <ol class="st-steps">
+      <li>Tap the <b>Share</b> button: the square with an arrow, at the top of the screen.</li>
+      <li>Choose <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+      <li>Close Safari, open <b>MIC Staff</b> from the Home Screen, and sign in there.</li>
+    </ol>
+    <button class="st-link" id="stSkipInstall" type="button">Use it in Safari instead, without notifications</button>
+  </div>
+</div>
+
+<!-- ============ sign in ============ -->
+<div class="st-cover" id="stLogin" hidden>
+  <div class="st-card">
+    <img class="logo" src="/mic-lockup-horizontal.png" alt="Metn Innovation Campus" />
+    <h1>Staff sign in</h1>
+    <p class="lead">Today's bookings and your tasks, in one place.</p>
+    <div id="stLoginMsg"></div>
+    <form id="stForm" autocomplete="on">
+      <div class="bk-field">
+        <label for="stEmail">Email</label>
+        <input id="stEmail" type="email" required autocomplete="username" autocapitalize="off" spellcheck="false" />
+      </div>
+      <div class="bk-field" style="margin-bottom:16px;">
+        <label for="stPass">Password</label>
+        <input id="stPass" type="password" required autocomplete="current-password" />
+      </div>
+      <button class="btn btn--primary btn--block" id="stGo" type="submit">Sign in</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ the dashboard ============ -->
+<div id="stApp" hidden>
+  <div class="st-sticky">
+    <header class="st-top">
+      <div class="st-brand"><img src="/mic-icon.png" alt="" /> <span>MIC Staff</span></div>
+      <div class="st-chips">
+        <button class="st-chip is-off" id="chipPush" type="button"><span class="dot"></span><span class="tx">Notifications</span></button>
+        <button class="st-chip is-off" id="chipWake" type="button"><span class="dot"></span><span class="tx">Screen may sleep</span></button>
+        <span class="st-chip is-off" id="chipSync"><span class="dot"></span><span class="tx">Loading…</span></span>
+      </div>
+      <div class="st-clock"><b id="stTime">&nbsp;</b><small id="stDate">&nbsp;</small></div>
+      <button class="st-out" id="stOut" type="button">Sign out</button>
+    </header>
+    <div id="stAlertBox"></div>
+  </div>
+
+  <div class="st-start" id="stStartBar">
+    <div class="tx">
+      <b>Start your shift<span id="stHello"></span></b>
+      <span id="stStartWhy">Turns on the chime for new tasks and keeps this screen awake.</span>
+    </div>
+    <button class="btn btn--amber" id="stStartGo" type="button">Start shift</button>
+  </div>
+
+  <main class="st-grid">
+    <section class="st-panel" aria-labelledby="hTasks">
+      <h2 id="hTasks">Tasks <span class="st-count is-zero" id="cTasks">0</span></h2>
+      <div id="stTasks"><div class="st-empty">Loading…</div></div>
+      <details class="st-donelist" id="stDoneWrap" hidden>
+        <summary id="stDoneSum">Done today</summary>
+        <div id="stDone"></div>
+      </details>
+    </section>
+
+    <section class="st-panel" aria-labelledby="hBk">
+      <h2 id="hBk">Bookings <span class="st-count is-zero" id="cBk">0</span></h2>
+      <div id="stBookings"><div class="st-empty">Loading…</div></div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ mark a task done ============ -->
+<div class="st-sheet" id="stSheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="box">
+    <h3 id="sheetTitle">Mark as done</h3>
+    <p class="sub" id="sheetTask"></p>
+
+    <label for="sheetNote" class="st-label">Note <span class="bk-muted">(optional)</span></label>
+    <textarea id="sheetNote" maxlength="500" placeholder="Anything the team should know"></textarea>
+
+    <div class="st-proof">
+      <input class="st-file" type="file" id="sheetFile" accept="image/*,video/*" />
+      <label class="pick-btn" for="sheetFile" id="sheetPick">Add a photo or video <span class="bk-muted">(optional)</span></label>
+      <div class="prev" id="sheetPrev" hidden></div>
+      <div class="st-bar" id="sheetBar" hidden><i></i></div>
+    </div>
+
+    <div id="sheetMsg"></div>
+
+    <div class="acts">
+      <button class="btn btn--ghost" id="sheetCancel" type="button">Cancel</button>
+      <button class="btn btn--primary" id="sheetGo" type="button">Mark as done</button>
+    </div>
+  </div>
+</div>
+
+<script src="/staff.js"></script>
+</body>
+</html>

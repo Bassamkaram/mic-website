@@ -1,0 +1,228 @@
+/* ============================================================
+   MIC — staff tablet (staff.html)
+   Built to be read at arm's length on a tablet left on a desk:
+   large type, large touch targets, nothing that needs a mouse.
+   ============================================================ */
+
+body.staff { background: var(--bg); min-height: 100vh; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+body.staff * { -webkit-touch-callout: none; }
+
+/* ---------------------------------------------------- top bar -- */
+/* the header and any new-task alert stick together at the top */
+.st-sticky {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(250,246,238,.94);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.st-top {
+  display: flex; align-items: center; gap: 14px;
+  padding: max(12px, env(safe-area-inset-top)) 22px 12px;
+}
+.st-brand { display: flex; align-items: center; gap: 10px; font-family: var(--serif); font-size: 22px; color: var(--cedar); white-space: nowrap; }
+.st-brand img { width: 36px; height: auto; display: block; }
+.st-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.st-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--paper); font: inherit; font-size: 13px; color: var(--ink-soft); cursor: default;
+}
+button.st-chip { cursor: pointer; }
+.st-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cedar-light); }
+.st-chip.is-warn .dot { background: var(--amber); }
+.st-chip.is-off  .dot { background: var(--ink-mute); }
+.st-clock { margin-left: auto; text-align: right; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.st-clock b { display: block; font-family: var(--serif); font-weight: 400; font-size: 26px; color: var(--cedar); }
+.st-clock small { font-size: 12.5px; color: var(--ink-mute); white-space: nowrap; }
+.st-out { background: none; border: 0; padding: 8px 4px; font: inherit; font-size: 13px; color: var(--ink-mute); text-decoration: underline; cursor: pointer; white-space: nowrap; }
+/* Portrait tablet and phone: brand and clock on the first line, the status
+   chips and Sign out on the second. The ::after item forces the line break. */
+@media (max-width: 900px) {
+  .st-top { flex-wrap: wrap; row-gap: 10px; }
+  .st-brand { order: 0; }
+  .st-clock { order: 1; margin-left: auto; }
+  .st-top::after { content: ''; order: 2; flex-basis: 100%; height: 0; }
+  .st-chips { order: 3; flex: 1 1 0; min-width: 0; }
+  .st-out { order: 4; align-self: center; }
+}
+@media (max-width: 520px) {
+  .st-top { padding-left: 16px; padding-right: 16px; }
+  .st-chip { padding: 6px 10px; font-size: 12.5px; }
+  .st-grid { padding-left: 16px; padding-right: 16px; }
+  .st-start, .st-alert { margin-left: 16px; margin-right: 16px; }
+}
+
+/* ---------------------------------------------- new-task alert -- */
+.st-alert {
+  display: flex; align-items: center; gap: 14px;
+  margin: 0 22px 12px; padding: 14px 18px; border-radius: var(--r);
+  background: var(--cedar); color: var(--on-dark);
+  box-shadow: 0 10px 30px rgba(24,61,49,.25);
+  animation: st-drop .35s var(--ease-out);
+}
+.st-alert.is-urgent { background: var(--rose); box-shadow: 0 10px 30px rgba(194,65,12,.3); }
+.st-alert .ic { font-size: 22px; line-height: 1; }
+.st-alert .tx { flex: 1; min-width: 0; }
+.st-alert .tx small { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+.st-alert .tx b { display: block; font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-alert button {
+  border: 1px solid rgba(255,255,255,.5); background: rgba(255,255,255,.12); color: inherit;
+  padding: 10px 16px; border-radius: 10px; font: inherit; font-size: 14px; cursor: pointer; white-space: nowrap;
+}
+@keyframes st-drop { from { transform: translateY(-14px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* --------------------------------------------------------- grid -- */
+.st-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; padding: 22px 22px 60px; align-items: start; }
+@media (max-width: 920px) { .st-grid { grid-template-columns: 1fr; } }
+.st-panel > h2 {
+  display: flex; align-items: baseline; gap: 10px;
+  margin: 4px 0 14px; font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--cedar);
+}
+.st-count {
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  background: var(--cedar); color: var(--on-dark); border-radius: 999px; padding: 3px 10px;
+}
+.st-count.is-zero { background: var(--line-strong); color: var(--ink-soft); }
+.st-empty {
+  padding: 34px 20px; text-align: center; color: var(--ink-mute); font-size: 15px;
+  border: 1px dashed var(--line-strong); border-radius: var(--r); background: rgba(255,255,255,.4);
+}
+
+/* -------------------------------------------------------- tasks -- */
+.st-task {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 18px 18px 16px; margin-bottom: 12px; scroll-margin-top: 140px;
+}
+.st-task.is-urgent { border-color: rgba(194,65,12,.4); box-shadow: inset 5px 0 0 var(--rose); }
+.st-task.is-flash { animation: st-flash 1.4s var(--ease) 2; }
+@keyframes st-flash { 0%,100% { background: var(--paper); } 50% { background: rgba(217,119,6,.14); } }
+.st-task h3 { margin: 0; font-family: var(--sans); font-size: 19px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+.st-task .det { margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: var(--ink-soft); white-space: pre-line; }
+.st-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.st-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 10px; border-radius: 999px; background: rgba(27,67,50,.07); color: var(--cedar);
+}
+.st-tag.urgent { background: rgba(194,65,12,.12); color: var(--rose); }
+.st-tag.late   { background: rgba(194,65,12,.12); color: var(--rose); }
+.st-tag.soon   { background: rgba(217,119,6,.14); color: #9a5600; }
+.st-tag.mine   { background: rgba(37,99,235,.1);  color: var(--blue); }
+.st-task .go {
+  margin-top: 14px; width: 100%; min-height: 54px; font-size: 16.5px;
+}
+.st-donelist { margin-top: 18px; }
+.st-donelist summary { cursor: pointer; font-size: 14px; color: var(--ink-mute); padding: 8px 2px; list-style: none; }
+.st-donelist summary::-webkit-details-marker { display: none; }
+.st-donelist summary::before { content: '▸ '; }
+.st-donelist[open] summary::before { content: '▾ '; }
+.st-doneitem {
+  display: flex; gap: 10px; align-items: baseline;
+  padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--ink-soft);
+}
+.st-doneitem s { color: var(--ink-mute); flex: 1; }
+.st-doneitem small { color: var(--ink-mute); white-space: nowrap; }
+
+/* ----------------------------------------------------- bookings -- */
+.st-day { margin-bottom: 18px; }
+.st-day > h3 {
+  margin: 0 0 8px; font-family: var(--sans); font-size: 12.5px; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-mute);
+}
+.st-day > h3 b { color: var(--cedar); }
+.st-bk {
+  display: grid; grid-template-columns: 112px 1fr; gap: 6px 14px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: 13px 14px; margin-bottom: 8px;
+}
+.st-bk .t { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--cedar); font-size: 15px; line-height: 1.35; }
+.st-bk .t small { display: block; font-weight: 500; color: var(--ink-mute); font-size: 12px; margin-top: 2px; }
+.st-bk .w { font-size: 15px; color: var(--ink); line-height: 1.4; }
+.st-bk .w small { display: block; color: var(--ink-soft); font-size: 13px; margin-top: 3px; line-height: 1.45; }
+.st-bk .w .st-tag { margin-top: 6px; }
+.st-bk.is-pending { border-style: dashed; }
+.st-bk.is-closed { background: rgba(110,129,120,.06); }
+.st-bk.is-now { border-color: var(--cedar-light); box-shadow: inset 5px 0 0 var(--cedar-light); }
+.st-bk.is-past { opacity: .5; }
+@media (max-width: 520px) { .st-bk { grid-template-columns: 1fr; } }
+
+/* ------------------------------------------------- start banner -- */
+.st-start {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin: 14px 22px 0; padding: 16px 18px; border-radius: var(--r);
+  background: rgba(217,119,6,.10); border: 1px solid rgba(217,119,6,.3);
+}
+.st-start .tx { flex: 1; min-width: 220px; }
+.st-start .tx b { display: block; font-size: 17px; color: var(--ink); }
+.st-start .tx > span { font-size: 14px; color: var(--ink-soft); }
+.st-start .btn { min-height: 52px; padding: 0 28px; font-size: 16px; }
+.st-bk a { color: var(--cedar-light); }
+
+/* --------------------------------------------- mark-done sheet -- */
+.st-sheet {
+  position: fixed; inset: 0; z-index: 100;
+  display: grid; place-items: center; padding: 20px;
+  background: rgba(15,42,31,.45); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+}
+.st-sheet .box {
+  width: min(560px, 100%); max-height: calc(100dvh - 40px); overflow: auto;
+  background: var(--paper); border-radius: var(--r-lg); padding: 24px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.25);
+}
+.st-sheet h3 { margin: 0 0 4px; font-family: var(--serif); font-size: 24px; font-weight: 400; color: var(--cedar); }
+.st-sheet .sub { margin: 0 0 16px; font-size: 15px; color: var(--ink-soft); }
+.st-sheet textarea {
+  width: 100%; min-height: 88px; padding: 12px 14px; font: inherit; font-size: 16px; color: var(--ink);
+  background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; resize: vertical;
+}
+.st-sheet textarea:focus { outline: none; border-color: var(--cedar); }
+.st-label { display: block; margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.st-proof { margin: 14px 0 6px; position: relative; }
+/* the real file input stays in the page (iOS needs that) but out of sight;
+   the label below is what people tap */
+.st-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; pointer-events: none; }
+.st-proof .pick-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; min-height: 58px; border-radius: 12px; cursor: pointer;
+  border: 2px dashed var(--line-strong); background: var(--bg-soft);
+  font-size: 16px; color: var(--cedar); text-align: center; padding: 10px;
+}
+.st-file:focus-visible + .pick-btn { outline: 2px solid var(--cedar-light); outline-offset: 2px; }
+.st-proof .prev { position: relative; border-radius: 12px; overflow: hidden; background: #000; }
+.st-proof .prev img, .st-proof .prev video { display: block; width: 100%; max-height: 300px; object-fit: contain; }
+.st-proof .prev button {
+  position: absolute; top: 8px; right: 8px; padding: 8px 12px; border-radius: 9px; border: 0;
+  background: rgba(255,255,255,.9); font: inherit; font-size: 13px; cursor: pointer;
+}
+.st-bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 12px 0 0; }
+.st-bar i { display: block; height: 100%; width: 0; background: var(--cedar-light); transition: width .2s; }
+.st-sheet .acts { display: flex; gap: 10px; margin-top: 18px; }
+.st-sheet .acts .btn { flex: 1; min-height: 54px; font-size: 16px; }
+
+/* --------------------------------------- start / sign-in screens -- */
+.st-cover {
+  min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px;
+  background: radial-gradient(1200px 600px at 20% 0%, var(--bg-warm), var(--bg));
+}
+.st-card {
+  width: min(460px, 100%); background: var(--paper); border: 1px solid var(--line);
+  border-radius: var(--r-lg); padding: 30px 28px; box-shadow: 0 20px 60px rgba(24,61,49,.08);
+}
+.st-card .logo { display: block; width: 190px; height: auto; margin: 0 auto 18px; }
+.st-card h1 { margin: 0 0 6px; text-align: center; font-family: var(--serif); font-size: 30px; font-weight: 400; color: var(--cedar); }
+.st-card p.lead { margin: 0 0 20px; text-align: center; color: var(--ink-soft); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+.st-card .bk-field { margin-bottom: 12px; }
+.st-card .bk-field input { font-size: 16px; padding: 13px 14px; }   /* 16px stops iOS zooming in */
+.st-card .btn { width: 100%; min-height: 54px; font-size: 16.5px; }
+.st-steps { margin: 6px 0 18px; padding: 14px 16px 14px 34px; background: var(--bg-soft); border-radius: 12px; font-size: 14.5px; line-height: 1.6; color: var(--ink-soft); }
+.st-steps li { margin-bottom: 4px; }
+.st-link { display: block; width: 100%; margin-top: 10px; background: none; border: 0; padding: 10px; font: inherit; font-size: 14px; color: var(--ink-mute); text-decoration: underline; cursor: pointer; }
+
+.st-toast {
+  position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 120;
+  width: max-content; max-width: min(560px, calc(100vw - 32px));
+  padding: 13px 20px; border-radius: 12px; background: var(--cedar); color: var(--on-dark);
+  font-size: 15px; line-height: 1.45; box-shadow: 0 12px 34px rgba(0,0,0,.2); animation: st-toast-in .3s var(--ease-out);
+}
+/* its own keyframes, so the slide-in keeps the centring transform */
+@keyframes st-toast-in { from { transform: translate(-50%, 14px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }

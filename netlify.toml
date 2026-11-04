@@ -34,3 +34,20 @@
   for = "/*.png"
   [headers.values]
     Cache-Control = "public, max-age=31536000"
+
+# Serverless functions (the push-notification sender lives here)
+[functions]
+  directory = "netlify/functions"
+
+# The service worker must never be served stale, or a fix to it would not
+# reach tablets that already installed it
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/*.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"

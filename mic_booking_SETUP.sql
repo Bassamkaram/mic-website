@@ -86,7 +86,9 @@ where  status in ('confirmed','blocked');
 
 -- --------------------------------------------------------------- row level --
 alter table public.room_bookings enable row level security;
-alter table public.room_bookings force row level security;
+-- Not FORCE-d: the public availability view reads this table as its owner.
+-- The public and staff are still bound by every policy below.
+alter table public.room_bookings no force row level security;
 
 -- Anyone may lodge a request, but only ever as a pending one, and never as a
 -- manual block. Everything staff-only is refused here.
@@ -103,17 +105,29 @@ create policy room_bookings_public_insert
 -- Deliberately no SELECT, UPDATE or DELETE policy for anon: with RLS on,
 -- absent policy means denied, so the public cannot read the table at all.
 
+-- Who counts as staff lives in a table, managed from the console's Staff tab.
+-- mic_staff_SETUP.sql defines exactly the same thing, so running either file
+-- again, in any order, leaves the same result.
+create table if not exists public.booking_staff (
+  email       text primary key check (email = lower(email)),
+  name        text,
+  role        text not null check (role in ('admin','viewer')),
+  active      boolean not null default true,
+  created_at  timestamptz not null default now()
+);
+insert into public.booking_staff (email, role) values
+  ('bassamkaram@gmail.com',       'admin'),
+  ('amanda.a.abdallah@gmail.com', 'admin'),
+  ('info@mic-lb.com',             'admin')
+on conflict (email) do nothing;
+alter table public.booking_staff enable row level security;
+
 create or replace function public.is_booking_staff()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select lower(coalesce(auth.jwt() ->> 'email', '')) in (
-    'bassamkaram@gmail.com',
-    'amanda.a.abdallah@gmail.com',
-    'info@mic-lb.com'
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.booking_staff s
+    where s.email = lower(coalesce(auth.jwt() ->> 'email', ''))
+      and s.role = 'admin' and s.active
   );
 $$;
 

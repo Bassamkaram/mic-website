@@ -42,7 +42,7 @@ alter table public.room_bookings
 
 -- ---------------------------------------------------------------- security --
 alter table public.booking_addons enable row level security;
-alter table public.booking_addons force row level security;
+alter table public.booking_addons no force row level security;
 
 -- The public may read the live menu, and nothing else.
 drop policy if exists booking_addons_public_read on public.booking_addons;
