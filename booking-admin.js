@@ -94,7 +94,8 @@
         if (!r.ok) throw new Error();
         return r.json();
       })
-      .then(function (d) { if (!d) return; rows = d; render(); })
+      .then(function (d) { if (!d) return; rows = d; return loadMenu(); })
+      .then(function () { render(); })
       .catch(function () { msg('err', 'Could not load bookings. Try again in a moment.'); });
   }
   function patch(ids, body, label) {
@@ -118,10 +119,12 @@
 
     $('admCal').hidden  = view !== 'calendar';
     $('admAdd').hidden  = view !== 'add';
-    $('admList').hidden = view === 'calendar' || view === 'add';
+    $('admMenu').hidden = view !== 'menu';
+    $('admList').hidden = ['calendar','add','menu'].indexOf(view) !== -1;
 
     if (view === 'calendar') { renderCal(); return; }
     if (view === 'add') { renderAdd(); return; }
+    if (view === 'menu') { renderMenu(); return; }
 
     var set = view === 'pending' ? pending : view === 'waitlist' ? waits : view === 'confirmed' ? conf : rows;
     var gs = groups(set);
@@ -169,7 +172,12 @@
         (r.phone ? '<dt>Phone</dt><dd><a href="tel:' + esc(r.phone) + '">' + esc(r.phone) + '</a></dd>' : '') +
         (r.email ? '<dt>Email</dt><dd><a href="mailto:' + esc(r.email) + '">' + esc(r.email) + '</a></dd>' : '') +
         '<dt>People</dt><dd>' + esc(r.headcount) + (r.setup ? ' &middot; ' + (r.setup === 'ushape' ? 'U-shape' : 'Classroom') : '') + '</dd>' +
-        '<dt>Catering</dt><dd>' + esc(CAT[r.catering] || r.catering) + (r.catering_people ? ' for ' + esc(r.catering_people) : '') + '</dd>' +
+        (r.addons && r.addons.length
+           ? '<dt>Ordered</dt><dd>' + r.addons.map(function (a) {
+               return esc(a.name) + (a.line === null ? ' <em>(quote)</em>' : a.line > 0 ? ' $' + a.line : ' (incl.)');
+             }).join('<br/>') + '</dd>'
+           : '<dt>Catering</dt><dd>' + esc(CAT[r.catering] || r.catering) + (r.catering_people ? ' for ' + esc(r.catering_people) : '') + '</dd>') +
+        (r.addons_note ? '<dt>Special order</dt><dd>' + esc(r.addons_note) + '</dd>' : '') +
         (r.catering_quote ? '<dt>Quoted</dt><dd>$' + esc(r.catering_quote) + '</dd>' : '') +
         (r.notes ? '<dt>Notes</dt><dd>' + esc(r.notes) + '</dd>' : '') +
       '</dl>';
@@ -366,6 +374,93 @@
     });
   }
 
+  /* ----------------------------------------- catering & extras menu -- */
+  var menu = [];
+  var KINDLABEL = { package: 'Catering packages', item: 'Catering items (build your own)', extra: 'Equipment and services' };
+
+  function loadMenu() {
+    return fetch(SUPABASE_URL + '/rest/v1/booking_addons?select=*&order=kind.asc,sort.asc', { headers: hdrs() })
+      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+      .then(function (d) { menu = d; })
+      .catch(function () {
+        msg('err', 'Could not load the catering menu. If this is the first time, run mic_booking_EXTRAS.sql in Supabase.');
+        menu = [];
+      });
+  }
+
+  function renderMenu() {
+    var box = $('menuGroups');
+    if (!menu.length) { box.innerHTML = '<p class="bk-muted">Nothing on the menu yet.</p>'; return; }
+    box.innerHTML = ['package','item','extra'].map(function (k) {
+      var set = menu.filter(function (m) { return m.kind === k; });
+      if (!set.length) return '';
+      return '<div class="menu-group"><h4>' + KINDLABEL[k] + '</h4>' + set.map(function (m) {
+        return '<div class="menu-row' + (m.active ? '' : ' is-off') + '" data-id="' + m.id + '">' +
+          '<input data-f="name" value="' + esc(m.name) + '" maxlength="80"/>' +
+          '<input data-f="description" value="' + esc(m.description || '') + '" maxlength="200" placeholder="Description"/>' +
+          '<input data-f="price" type="number" min="0" step="0.5" value="' + (m.price == null ? '' : m.price) + '" placeholder="on req"/>' +
+          '<select data-f="unit">' +
+            ['per_person','flat','per_hour'].map(function (u) {
+              return '<option value="' + u + '"' + (m.unit === u ? ' selected' : '') + '>' +
+                     (u === 'per_person' ? 'per person' : u === 'flat' ? 'flat' : 'per hour') + '</option>';
+            }).join('') +
+          '</select>' +
+          '<label class="m-toggle"><input type="checkbox" data-f="active"' + (m.active ? ' checked' : '') + '/>live</label>' +
+          '<span class="m-act"><button class="save" data-m="save">Save</button>' +
+          '<button class="del" data-m="del">Delete</button></span></div>';
+      }).join('') + '</div>';
+    }).join('');
+
+    box.querySelectorAll('[data-m]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var row = b.closest('.menu-row'), id = row.dataset.id;
+        if (b.dataset.m === 'del') {
+          if (!window.confirm('Delete this permanently? Switching it off instead keeps it out of the public page without touching past bookings.')) return;
+          fetch(SUPABASE_URL + '/rest/v1/booking_addons?id=eq.' + id, { method: 'DELETE', headers: hdrs() })
+            .then(function (r) { if (!r.ok) throw new Error(); msg('ok', 'Deleted.'); return loadMenu().then(renderMenu); })
+            .catch(function () { msg('err', 'Could not delete that.'); });
+          return;
+        }
+        var g = function (f) { return row.querySelector('[data-f="' + f + '"]'); };
+        var priceRaw = g('price').value.trim();
+        var body = {
+          name: g('name').value.trim(),
+          description: g('description').value.trim() || null,
+          price: priceRaw === '' ? null : Number(priceRaw),
+          unit: g('unit').value,
+          active: g('active').checked
+        };
+        if (!body.name) { msg('err', 'It needs a name.'); return; }
+        fetch(SUPABASE_URL + '/rest/v1/booking_addons?id=eq.' + id, {
+          method: 'PATCH', headers: Object.assign(hdrs(), { Prefer: 'return=minimal' }), body: JSON.stringify(body)
+        }).then(function (r) { if (!r.ok) throw new Error(); msg('ok', 'Saved. It is live on the booking page now.'); return loadMenu().then(renderMenu); })
+          .catch(function () { msg('err', 'Could not save that.'); });
+      });
+    });
+  }
+
+  function menuAdd() {
+    var name = $('newName').value.trim();
+    if (!name) { msg('err', 'Give it a name first.'); return; }
+    var priceRaw = $('newPrice').value.trim();
+    var kind = $('newKind').value;
+    var sort = 10 + 10 * menu.filter(function (m) { return m.kind === kind; }).length;
+    fetch(SUPABASE_URL + '/rest/v1/booking_addons', {
+      method: 'POST', headers: Object.assign(hdrs(), { Prefer: 'return=minimal' }),
+      body: JSON.stringify([{
+        kind: kind, name: name,
+        description: $('newDesc').value.trim() || null,
+        price: priceRaw === '' ? null : Number(priceRaw),
+        unit: $('newUnit').value, active: true, sort: sort
+      }])
+    }).then(function (r) {
+      if (!r.ok) throw new Error();
+      msg('ok', '"' + name + '" added and live on the booking page.');
+      ['newName','newDesc','newPrice'].forEach(function (i) { $(i).value = ''; });
+      return loadMenu().then(renderMenu);
+    }).catch(function () { msg('err', 'Could not add that.'); });
+  }
+
   /* ------------------------------------------------------------ wire -- */
   function setView(v) {
     view = v;
@@ -426,6 +521,7 @@
       $(id).addEventListener('input',  function () { renderAdd(); });
     });
     $('addGo').addEventListener('click', addGo);
+    $('newGo').addEventListener('click', menuAdd);
     $('addDate').value = iso(new Date());
 
     try { var saved = sessionStorage.getItem(LS); if (saved) { token = saved; open_(); } } catch (_) {}

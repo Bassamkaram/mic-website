@@ -75,6 +75,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <button class="adm-tab" data-view="confirmed" aria-pressed="false">Confirmed <span class="c" id="cConf">0</span></button>
       <button class="adm-tab" data-view="all"       aria-pressed="false">Everything</button>
       <button class="adm-tab" data-view="add"       aria-pressed="false">+ Add booking</button>
+      <button class="adm-tab" data-view="menu"      aria-pressed="false">Catering &amp; extras</button>
     </div>
 
     <!-- ============ calendar ============ -->
@@ -197,6 +198,56 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </div>
         <button class="btn btn--primary btn--block" id="addGo">Add to the calendar</button>
         <p class="bk-note">This goes straight in as confirmed, so the slot closes on the public calendar immediately.</p>
+      </div>
+    </div>
+
+
+    <!-- ============ catering and extras catalogue ============ -->
+    <div id="admMenu" hidden>
+      <p class="bk-muted" style="max-width:62ch;margin-bottom:18px;">
+        Everything here appears on the public booking page as soon as you save it. Leave a price
+        empty to mean <em>quoted on request</em>. Switch something off to retire it without losing
+        the bookings that already used it.
+      </p>
+      <div id="menuGroups"></div>
+
+      <div class="bk-panel" style="max-width:640px;margin-top:22px;">
+        <h4 style="font-family:var(--serif);font-size:19px;color:var(--cedar);margin:0 0 14px;">Add something new</h4>
+        <div class="bk-row">
+          <div class="bk-field">
+            <label for="newKind">Where it goes</label>
+            <select id="newKind">
+              <option value="package">Catering package &mdash; picked on its own</option>
+              <option value="item">Catering item &mdash; for building your own</option>
+              <option value="extra">Equipment or service</option>
+            </select>
+          </div>
+          <div class="bk-field">
+            <label for="newName">Name</label>
+            <input id="newName" type="text" maxlength="80" placeholder="e.g. Lebanese breakfast"/>
+          </div>
+        </div>
+        <div class="bk-row bk-row--1">
+          <div class="bk-field">
+            <label for="newDesc">Description <span class="bk-muted">(optional)</span></label>
+            <input id="newDesc" type="text" maxlength="200" placeholder="What it includes"/>
+          </div>
+        </div>
+        <div class="bk-row">
+          <div class="bk-field">
+            <label for="newPrice">Price <span class="bk-muted">(leave empty for on request)</span></label>
+            <input id="newPrice" type="number" min="0" step="0.5" placeholder="e.g. 5"/>
+          </div>
+          <div class="bk-field">
+            <label for="newUnit">Charged</label>
+            <select id="newUnit">
+              <option value="per_person">per person</option>
+              <option value="flat">once, flat</option>
+              <option value="per_hour">per hour</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn--primary" id="newGo">Add it</button>
       </div>
     </div>
 

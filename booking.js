@@ -15,13 +15,6 @@
   /* ---- the only numbers to change if pricing moves ---- */
   var RATE_MEETING_HOUR = 20;    // $ per hour
   var RATE_WORKSHOP_HALF = 100;  // $ per half-day, so a full day is 200
-  var CATERING = {
-    none:         { label: 'No refreshments',      pp: 0 },
-    refreshments: { label: 'Refreshments',          pp: 3 },
-    coffee_break: { label: 'Coffee break',          pp: 5 },
-    premium:      { label: 'Premium coffee break',  pp: 10 },
-    meal:         { label: 'Meal break',            pp: null }   // quoted on request
-  };
   var CAP = { meeting: 15, workshop: { ushape: 30, classroom: 40 } };
   var HALF = {
     am: { label: 'Morning',   time: '08:00 – 14:00' },
@@ -43,8 +36,12 @@
     slots: [],           // selected slot keys
     waitlist: false,     // true when the selection is on taken slots
     setup: null,
-    taken: {}            // 'YYYY-MM-DD' -> { slotKey: true }
+    taken: {},           // 'YYYY-MM-DD' -> { slotKey: true }
+    pkg: null,           // chosen package id
+    picks: {}            // chosen item/extra id -> true
   };
+
+  var MENU = [];         // catering packages, items and extras, from the database
 
   /* ---------------------------------------------------------- helpers -- */
   function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
@@ -208,7 +205,6 @@
       ? state.slots.length * RATE_WORKSHOP_HALF
       : state.slots.length * RATE_MEETING_HOUR;
   }
-  function cateringChoice() { return $('bkCatering') ? $('bkCatering').value : 'none'; }
   function headcount() { return parseInt($('bkHeads') && $('bkHeads').value, 10) || 0; }
 
   function renderSummary() {
@@ -226,9 +222,8 @@
     if (state.setup) rows.push(['Setup', state.setup === 'ushape' ? 'U-shape' : 'Classroom']);
 
     var roomCost = priceRooms();
-    var cat = CATERING[cateringChoice()];
-    var people = headcount();
-    var catCost = (cat && cat.pp && people) ? cat.pp * people : 0;
+    var extras   = chosen();
+    var extraSum = addonsTotal();
 
     var html = rows.map(function (r) {
       return '<div class="bk-line"><span>' + r[0] + '</span><span>' + r[1] + '</span></div>';
@@ -238,19 +233,28 @@
       html += '<div class="bk-line is-muted"><span>Waitlist request</span><span>no charge</span></div>';
     } else {
       html += '<div class="bk-line"><span>Room</span><span>$' + roomCost + '</span></div>';
-      if (cateringChoice() === 'meal') {
-        html += '<div class="bk-line is-muted"><span>' + cat.label + '</span><span>on request</span></div>';
-      } else if (catCost) {
-        html += '<div class="bk-line"><span>' + cat.label + ' &times; ' + people +
-                '</span><span>$' + catCost + '</span></div>';
+      extras.forEach(function (m) {
+        var c = lineCost(m);
+        if (c === null) {
+          html += '<div class="bk-line is-muted"><span>' + escHtml(m.name) + '</span><span>on request</span></div>';
+        } else if (c > 0) {
+          html += '<div class="bk-line"><span>' + escHtml(m.name) +
+                  (m.unit === 'per_person' ? ' &times; ' + headcount() : '') +
+                  '</span><span>$' + c + '</span></div>';
+        } else {
+          html += '<div class="bk-line is-muted"><span>' + escHtml(m.name) + '</span><span>included</span></div>';
+        }
+      });
+      if (specialText()) {
+        html += '<div class="bk-line is-muted"><span>Special order</span><span>on request</span></div>';
       }
     }
     $('bkSumBody').innerHTML = html;
-    $('bkTotal').textContent = state.waitlist ? '—' : ('$' + (roomCost + catCost));
+    $('bkTotal').textContent = state.waitlist ? '\u2014' : ('$' + (roomCost + extraSum));
     $('bkTotalNote').textContent = state.waitlist
       ? 'Joining the waitlist costs nothing and commits you to nothing. We contact waitlist requests in the order they arrive.'
-      : (cateringChoice() === 'meal'
-          ? 'An estimate. The meal break is quoted separately once we know what you need.'
+      : (anyOnRequest()
+          ? 'An estimate. Anything marked on request is quoted separately once we know what you need.'
           : 'An estimate, not an invoice. We confirm availability and the final figure within one working day, and nothing is charged before you agree it.');
   }
 
@@ -276,12 +280,109 @@
     $('bkHeads').max = String(lim);
   }
   function refreshCatHint() {
-    var cat = CATERING[cateringChoice()], n = headcount(), el = $('bkCatHint');
-    if (!el) return;
-    if (cateringChoice() === 'meal') el.textContent = 'We will quote this with your confirmation.';
-    else if (cat.pp && n) el.textContent = '$' + cat.pp + ' × ' + n + ' = $' + (cat.pp * n) + '.';
-    else if (cat.pp) el.textContent = '$' + cat.pp + ' per person.';
-    else el.textContent = '';
+    var el = $('bkCatHint'); if (!el) return;
+    var n = chosen().length;
+    el.textContent = n ? n + (n === 1 ? ' extra chosen' : ' extras chosen') : '';
+  }
+
+  /* ------------------------------------------- catering and extras -- */
+  function loadMenu() {
+    return fetch(api + 'booking_addons?select=id,kind,name,description,price,unit&order=kind.asc,sort.asc', { headers: headers })
+      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+      .then(function (d) { MENU = d; })
+      .catch(function () { MENU = []; });
+  }
+  function byKind(k) { return MENU.filter(function (m) { return m.kind === k; }); }
+  function addonById(id) {
+    for (var i = 0; i < MENU.length; i++) if (MENU[i].id === id) return MENU[i];
+    return null;
+  }
+  function priceLabel(m) {
+    if (m.price == null) return 'on request';
+    if (Number(m.price) === 0) return 'included';
+    return '$' + Number(m.price) + (m.unit === 'per_person' ? ' pp' : m.unit === 'per_hour' ? ' /hr' : '');
+  }
+  /* what one chosen line costs for this booking */
+  function lineCost(m) {
+    if (m.price == null) return null;                       // quoted separately
+    var p = Number(m.price);
+    if (m.unit === 'per_person') return p * headcount();
+    if (m.unit === 'per_hour')   return p * (state.room === 'workshop' ? state.slots.length * 6 : state.slots.length);
+    return p;
+  }
+  function chosen() {
+    var out = [];
+    if (state.pkg) { var pk = addonById(state.pkg); if (pk) out.push(pk); }
+    Object.keys(state.picks).forEach(function (id) {
+      if (state.picks[id]) { var m = addonById(id); if (m) out.push(m); }
+    });
+    return out;
+  }
+  function addonsTotal() {
+    return chosen().reduce(function (sum, m) { var c = lineCost(m); return sum + (c || 0); }, 0);
+  }
+  function anyOnRequest() {
+    return chosen().some(function (m) { return m.price == null; }) || !!specialText();
+  }
+  function specialText() { var el = $('bkSpecial'); return el ? el.value.trim() : ''; }
+
+  function renderMenu() {
+    var box = $('bkMenu');
+    if (!box) return;
+    if (!MENU.length) {
+      box.innerHTML = '<p class="bk-muted" style="font-size:13px;">Tell us in the notes below if you need refreshments or equipment.</p>';
+      return;
+    }
+    function row(m, type) {
+      var amt = priceLabel(m);
+      return '<label class="pick">' +
+        '<input type="' + type + '" name="' + (type === 'radio' ? 'bkpkg' : 'bkpick') + '" value="' + m.id + '"' +
+          (type === 'radio' ? (state.pkg === m.id ? ' checked' : '') : (state.picks[m.id] ? ' checked' : '')) + '/>' +
+        '<span class="lab">' + escHtml(m.name) +
+          (m.description ? '<small>' + escHtml(m.description) + '</small>' : '') + '</span>' +
+        '<span class="amt' + (m.price != null && Number(m.price) === 0 ? ' free' : '') + '">' + amt + '</span>' +
+      '</label>';
+    }
+    var html = '';
+    var packs = byKind('package');
+    if (packs.length) {
+      html += '<div class="pick-group"><h5>Choose a package</h5><div class="pick-list">' +
+        '<label class="pick"><input type="radio" name="bkpkg" value=""' + (state.pkg ? '' : ' checked') + '/>' +
+        '<span class="lab">No package<small>Nothing, or build your own below</small></span></label>' +
+        packs.map(function (m) { return row(m, 'radio'); }).join('') + '</div></div>';
+    }
+    var items = byKind('item');
+    if (items.length) {
+      html += '<div class="pick-group"><h5>Or build your own</h5><div class="pick-list">' +
+        items.map(function (m) { return row(m, 'checkbox'); }).join('') + '</div></div>';
+    }
+    var extras = byKind('extra');
+    if (extras.length) {
+      html += '<div class="pick-group"><h5>Equipment and setup</h5><div class="pick-list">' +
+        extras.map(function (m) { return row(m, 'checkbox'); }).join('') + '</div></div>';
+    }
+    html += '<div class="pick-group"><label class="pick" style="max-width:100%;">' +
+      '<input type="checkbox" id="bkSpecialToggle"' + ($('bkSpecialRow') && !$('bkSpecialRow').hidden ? ' checked' : '') + '/>' +
+      '<span class="lab">Something else<small>A special order we should quote for you</small></span></label></div>';
+    box.innerHTML = html;
+
+    box.querySelectorAll('input[name="bkpkg"]').forEach(function (i) {
+      i.addEventListener('change', function () { state.pkg = i.value || null; refreshCatHint(); renderSummary(); });
+    });
+    box.querySelectorAll('input[name="bkpick"]').forEach(function (i) {
+      i.addEventListener('change', function () { state.picks[i.value] = i.checked; refreshCatHint(); renderSummary(); });
+    });
+    var sp = $('bkSpecialToggle');
+    if (sp) sp.addEventListener('change', function () {
+      $('bkSpecialRow').hidden = !sp.checked;
+      if (!sp.checked && $('bkSpecial')) $('bkSpecial').value = '';
+      renderSummary();
+    });
+  }
+  function escHtml(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
   }
 
   /* ------------------------------------------------- email the team -- */
@@ -292,14 +393,17 @@
      person or undo anything. */
   function notifyTeam(name, email, phone) {
     try {
-      var cat = CATERING[cateringChoice()];
       var people = headcount();
       var time = state.room === 'workshop'
         ? (state.slots.length === 2 ? 'Full day (08:00-20:00)' : slotLabel(state.slots[0]))
         : state.slots.map(function (s) { return s + ':00'; }).join(', ') + '  (' + state.slots.length + 'h)';
       var money = state.waitlist ? 'waitlist, no charge'
-        : (cateringChoice() === 'meal' ? '$' + priceRooms() + ' + meal on request'
-                                       : '$' + (priceRooms() + ((cat.pp && people) ? cat.pp * people : 0)));
+        : '$' + (priceRooms() + addonsTotal()) + (anyOnRequest() ? ' plus items to quote' : '');
+      var picked = chosen().map(function (m) {
+        var c = lineCost(m);
+        return m.name + (c === null ? ' (on request)' : c > 0 ? ' $' + c : ' (included)');
+      });
+      if (specialText()) picked.push('SPECIAL ORDER: ' + specialText());
       var body = {
         'form-name': 'room-booking',
         room:     state.room === 'meeting' ? 'Meeting Room' : 'Workshop Room',
@@ -310,8 +414,9 @@
         org:      $('bkOrg').value.trim() || '-',
         people:   String(people),
         setup:    state.setup ? (state.setup === 'ushape' ? 'U-shape' : 'Classroom') : '-',
-        catering: cat.label + (cat.pp && people ? ' x' + people : ''),
+        catering: picked.length ? picked.join('; ') : 'none',
         estimate: money,
+        special:  specialText() || '-',
         notes:    $('bkNotes').value.trim() || '-'
       };
       fetch('/', {
@@ -355,9 +460,16 @@
     if (state.room === 'workshop' && !state.setup) { msg('err', 'Please choose U-shape or classroom.'); return; }
     if (heads > capacityLimit()) { msg('err', 'That room holds ' + capacityLimit() + ' people in the setup you picked.'); return; }
 
-    var cat = CATERING[cateringChoice()];
-    var quote = (!state.waitlist && cat.pp) ? cat.pp * heads + priceRooms()
-              : (!state.waitlist ? priceRooms() : null);
+    // Freeze what was chosen, and what it cost today, onto the booking itself,
+    // so editing the menu later never rewrites an old booking.
+    var snapshot = chosen().map(function (m) {
+      return { id: m.id, name: m.name, kind: m.kind, unit: m.unit,
+               price: m.price == null ? null : Number(m.price),
+               qty: m.unit === 'per_person' ? heads : 1,
+               line: lineCost(m) };
+    });
+    var quote = state.waitlist ? null : priceRooms() + addonsTotal();
+    var special = specialText();
 
     var reqId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
     var rows = state.slots.map(function (k) {
@@ -368,9 +480,11 @@
         org: $('bkOrg').value.trim() || null,
         headcount: heads,
         setup: state.room === 'workshop' ? state.setup : null,
-        catering: cateringChoice(),
-        catering_people: cateringChoice() === 'none' ? null : heads,
-        catering_quote: (cateringChoice() === 'meal' || state.waitlist) ? null : quote,
+        catering: snapshot.length ? 'custom' : 'none',
+        catering_people: snapshot.length ? heads : null,
+        catering_quote: (state.waitlist || anyOnRequest()) ? null : quote,
+        addons: snapshot,
+        addons_note: special || null,
         notes: $('bkNotes').value.trim() || null
       };
       if (reqId) r.request_id = reqId;
@@ -417,6 +531,7 @@
         $('bkStepForm').hidden = true;
         $('bkSummary').hidden = true;
         refreshCapHint();
+        if (!MENU.length) { loadMenu().then(renderMenu); } else { renderMenu(); }
         loadMonth().then(renderCalendar);
         $('bkStepDate').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       });
@@ -441,11 +556,13 @@
       });
     });
 
-    ['bkHeads', 'bkCatering'].forEach(function (id) {
+    ['bkHeads'].forEach(function (id) {
       $(id).addEventListener('input', function () { refreshCapHint(); refreshCatHint(); renderSummary(); });
       $(id).addEventListener('change', function () { refreshCapHint(); refreshCatHint(); renderSummary(); });
     });
 
+    var sp = $('bkSpecial');
+    if (sp) sp.addEventListener('input', renderSummary);
     $('bkForm').addEventListener('submit', submit);
 
     // deep link: booking.html?room=meeting
