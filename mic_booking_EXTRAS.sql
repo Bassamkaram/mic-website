@@ -86,9 +86,7 @@ select * from (values
   ('extra','Flipchart and markers', null,                                     0.00,'flat',50),
   ('extra','Whiteboard',       null,                                          0.00,'flat',60),
   ('extra','Printing',         'Handouts printed in advance. We quote per job.',
-                                                                              null,'flat',70),
-  ('extra','Recording',        'We record the session for you. Quoted per job.',
-                                                                              null,'flat',80)
+                                                                              null,'flat',70)
 ) as v(kind, name, description, price, unit, sort)
 where not exists (select 1 from public.booking_addons);
 

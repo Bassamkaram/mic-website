@@ -37,8 +37,10 @@
     waitlist: false,     // true when the selection is on taken slots
     setup: null,
     taken: {},           // 'YYYY-MM-DD' -> { slotKey: true }
-    pkg: null,           // chosen package id
-    picks: {}            // chosen item/extra id -> true
+    cat: 'none',         // 'none' | 'pkg:<id>' | 'custom' | 'special' — one or the other, never both
+    items: {},           // build-your-own items, only counted while cat is 'custom'
+    extras: {},          // equipment and setup, independent of the catering choice
+    special: ''          // special-order text, only counted while cat is 'special'
   };
 
   var MENU = [];         // catering packages, items and extras, from the database
@@ -232,7 +234,7 @@
     if (state.waitlist) {
       html += '<div class="bk-line is-muted"><span>Waitlist request</span><span>no charge</span></div>';
     } else {
-      html += '<div class="bk-line"><span>Room</span><span>$' + roomCost + '</span></div>';
+      html += '<div class="bk-line"><span>Room</span><span>' + money(roomCost) + '</span></div>';
       extras.forEach(function (m) {
         var c = lineCost(m);
         if (c === null) {
@@ -240,7 +242,7 @@
         } else if (c > 0) {
           html += '<div class="bk-line"><span>' + escHtml(m.name) +
                   (m.unit === 'per_person' ? ' &times; ' + headcount() : '') +
-                  '</span><span>$' + c + '</span></div>';
+                  '</span><span>' + money(c) + '</span></div>';
         } else {
           html += '<div class="bk-line is-muted"><span>' + escHtml(m.name) + '</span><span>included</span></div>';
         }
@@ -250,7 +252,7 @@
       }
     }
     $('bkSumBody').innerHTML = html;
-    $('bkTotal').textContent = state.waitlist ? '\u2014' : ('$' + (roomCost + extraSum));
+    $('bkTotal').textContent = state.waitlist ? '\u2014' : money(roomCost + extraSum);
     $('bkTotalNote').textContent = state.waitlist
       ? 'Joining the waitlist costs nothing and commits you to nothing. We contact waitlist requests in the order they arrive.'
       : (anyOnRequest()
@@ -297,34 +299,49 @@
     for (var i = 0; i < MENU.length; i++) if (MENU[i].id === id) return MENU[i];
     return null;
   }
-  function priceLabel(m) {
-    if (m.price == null) return 'on request';
-    if (Number(m.price) === 0) return 'included';
-    return '$' + Number(m.price) + (m.unit === 'per_person' ? ' pp' : m.unit === 'per_hour' ? ' /hr' : '');
+  function money(n) {
+    n = Number(n);
+    return '$' + (n % 1 === 0 ? n.toFixed(0) : n.toFixed(2));
   }
-  /* what one chosen line costs for this booking */
+  /* what one chosen line costs for this booking; null means quoted separately */
   function lineCost(m) {
-    if (m.price == null) return null;                       // quoted separately
+    if (m.price == null) return null;
     var p = Number(m.price);
     if (m.unit === 'per_person') return p * headcount();
     if (m.unit === 'per_hour')   return p * (state.room === 'workshop' ? state.slots.length * 6 : state.slots.length);
     return p;
   }
   function chosen() {
-    var out = [];
-    if (state.pkg) { var pk = addonById(state.pkg); if (pk) out.push(pk); }
-    Object.keys(state.picks).forEach(function (id) {
-      if (state.picks[id]) { var m = addonById(id); if (m) out.push(m); }
-    });
+    var out = [], m;
+    if (state.cat.indexOf('pkg:') === 0) { m = addonById(state.cat.slice(4)); if (m) out.push(m); }
+    if (state.cat === 'custom') {
+      Object.keys(state.items).forEach(function (id) { if (state.items[id]) { m = addonById(id); if (m) out.push(m); } });
+    }
+    Object.keys(state.extras).forEach(function (id) { if (state.extras[id]) { m = addonById(id); if (m) out.push(m); } });
     return out;
   }
   function addonsTotal() {
     return chosen().reduce(function (sum, m) { var c = lineCost(m); return sum + (c || 0); }, 0);
   }
+  function specialText() { return state.cat === 'special' ? String(state.special || '').trim() : ''; }
   function anyOnRequest() {
-    return chosen().some(function (m) { return m.price == null; }) || !!specialText();
+    return chosen().some(function (m) { return m.price == null; }) || state.cat === 'special';
   }
-  function specialText() { var el = $('bkSpecial'); return el ? el.value.trim() : ''; }
+
+  /* the price shown on the right of each option */
+  function amtHtml(m) {
+    if (m.price == null) return '<span class="amt quote">On request</span>';
+    var p = Number(m.price);
+    if (p === 0) return '<span class="amt free">Included</span>';
+    var unit = m.unit === 'per_person' ? 'per person' : m.unit === 'per_hour' ? 'per hour' : 'flat fee';
+    return '<span class="amt"><b>' + money(p) + '</b><small>' + unit + '</small></span>';
+  }
+  function opt(type, name, value, checked, title, desc, right) {
+    return '<label class="pick"><input type="' + type + '" name="' + name + '" value="' + escHtml(value) + '"' +
+      (checked ? ' checked' : '') + '/>' +
+      '<span class="lab">' + escHtml(title) + (desc ? '<small>' + escHtml(desc) + '</small>' : '') + '</span>' +
+      (right || '') + '</label>';
+  }
 
   function renderMenu() {
     var box = $('bkMenu');
@@ -333,51 +350,62 @@
       box.innerHTML = '<p class="bk-muted" style="font-size:13px;">Tell us in the notes below if you need refreshments or equipment.</p>';
       return;
     }
-    function row(m, type) {
-      var amt = priceLabel(m);
-      return '<label class="pick">' +
-        '<input type="' + type + '" name="' + (type === 'radio' ? 'bkpkg' : 'bkpick') + '" value="' + m.id + '"' +
-          (type === 'radio' ? (state.pkg === m.id ? ' checked' : '') : (state.picks[m.id] ? ' checked' : '')) + '/>' +
-        '<span class="lab">' + escHtml(m.name) +
-          (m.description ? '<small>' + escHtml(m.description) + '</small>' : '') + '</span>' +
-        '<span class="amt' + (m.price != null && Number(m.price) === 0 ? ' free' : '') + '">' + amt + '</span>' +
-      '</label>';
-    }
-    var html = '';
-    var packs = byKind('package');
-    if (packs.length) {
-      html += '<div class="pick-group"><h5>Choose a package</h5><div class="pick-list">' +
-        '<label class="pick"><input type="radio" name="bkpkg" value=""' + (state.pkg ? '' : ' checked') + '/>' +
-        '<span class="lab">No package<small>Nothing, or build your own below</small></span></label>' +
-        packs.map(function (m) { return row(m, 'radio'); }).join('') + '</div></div>';
-    }
-    var items = byKind('item');
+    var packs = byKind('package'), items = byKind('item'), extras = byKind('extra');
+
+    /* Refreshments: ONE radio group, so a package, your own selection and a
+       special order can never be chosen together. */
+    var html = '<div class="pick-group"><h5>Refreshments</h5><div class="pick-list">';
+    html += opt('radio', 'bkcat', 'none', state.cat === 'none', 'No refreshments', '', '');
+    packs.forEach(function (m) {
+      html += opt('radio', 'bkcat', 'pkg:' + m.id, state.cat === 'pkg:' + m.id, m.name, m.description, amtHtml(m));
+    });
     if (items.length) {
-      html += '<div class="pick-group"><h5>Or build your own</h5><div class="pick-list">' +
-        items.map(function (m) { return row(m, 'checkbox'); }).join('') + '</div></div>';
+      html += opt('radio', 'bkcat', 'custom', state.cat === 'custom', 'Build your own', 'Pick individual items', '');
     }
-    var extras = byKind('extra');
+    html += opt('radio', 'bkcat', 'special', state.cat === 'special', 'Special order',
+                'Tell us what you need and we will quote it', '<span class="amt quote">On request</span>');
+    html += '</div>';
+
+    html += '<div class="pick-sub" id="bkCustomPanel"' + (state.cat === 'custom' ? '' : ' hidden') + '>' +
+              '<div class="pick-list">' + items.map(function (m) {
+                return opt('checkbox', 'bkitem', m.id, !!state.items[m.id], m.name, m.description, amtHtml(m));
+              }).join('') + '</div></div>';
+
+    html += '<div class="pick-sub" id="bkSpecialPanel"' + (state.cat === 'special' ? '' : ' hidden') + '>' +
+              '<input id="bkSpecial" type="text" maxlength="300" ' +
+              'placeholder="e.g. a Lebanese breakfast for 20, four of them vegetarian" value="' + escHtml(state.special) + '"/>' +
+              '<div class="hint">We will price this and send it with your confirmation.</div></div>';
+    html += '</div>';
+
     if (extras.length) {
       html += '<div class="pick-group"><h5>Equipment and setup</h5><div class="pick-list">' +
-        extras.map(function (m) { return row(m, 'checkbox'); }).join('') + '</div></div>';
+        extras.map(function (m) {
+          return opt('checkbox', 'bkextra', m.id, !!state.extras[m.id], m.name, m.description, amtHtml(m));
+        }).join('') + '</div></div>';
     }
-    html += '<div class="pick-group"><label class="pick" style="max-width:100%;">' +
-      '<input type="checkbox" id="bkSpecialToggle"' + ($('bkSpecialRow') && !$('bkSpecialRow').hidden ? ' checked' : '') + '/>' +
-      '<span class="lab">Something else<small>A special order we should quote for you</small></span></label></div>';
     box.innerHTML = html;
 
-    box.querySelectorAll('input[name="bkpkg"]').forEach(function (i) {
-      i.addEventListener('change', function () { state.pkg = i.value || null; refreshCatHint(); renderSummary(); });
+    box.querySelectorAll('input[name="bkcat"]').forEach(function (i) {
+      i.addEventListener('change', function () {
+        state.cat = i.value;
+        if (state.cat !== 'custom') {            // leaving "build your own" clears it
+          state.items = {};
+          box.querySelectorAll('input[name="bkitem"]').forEach(function (c) { c.checked = false; });
+        }
+        $('bkCustomPanel').hidden  = state.cat !== 'custom';
+        $('bkSpecialPanel').hidden = state.cat !== 'special';
+        if (state.cat === 'special') $('bkSpecial').focus();
+        renderSummary();
+      });
     });
-    box.querySelectorAll('input[name="bkpick"]').forEach(function (i) {
-      i.addEventListener('change', function () { state.picks[i.value] = i.checked; refreshCatHint(); renderSummary(); });
+    box.querySelectorAll('input[name="bkitem"]').forEach(function (i) {
+      i.addEventListener('change', function () { state.items[i.value] = i.checked; renderSummary(); });
     });
-    var sp = $('bkSpecialToggle');
-    if (sp) sp.addEventListener('change', function () {
-      $('bkSpecialRow').hidden = !sp.checked;
-      if (!sp.checked && $('bkSpecial')) $('bkSpecial').value = '';
-      renderSummary();
+    box.querySelectorAll('input[name="bkextra"]').forEach(function (i) {
+      i.addEventListener('change', function () { state.extras[i.value] = i.checked; renderSummary(); });
     });
+    var sp = $('bkSpecial');
+    if (sp) sp.addEventListener('input', function () { state.special = sp.value; renderSummary(); });
   }
   function escHtml(t) {
     return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
@@ -398,10 +426,10 @@
         ? (state.slots.length === 2 ? 'Full day (08:00-20:00)' : slotLabel(state.slots[0]))
         : state.slots.map(function (s) { return s + ':00'; }).join(', ') + '  (' + state.slots.length + 'h)';
       var money = state.waitlist ? 'waitlist, no charge'
-        : '$' + (priceRooms() + addonsTotal()) + (anyOnRequest() ? ' plus items to quote' : '');
+        : money(priceRooms() + addonsTotal()) + (anyOnRequest() ? ' plus items to quote' : '');
       var picked = chosen().map(function (m) {
         var c = lineCost(m);
-        return m.name + (c === null ? ' (on request)' : c > 0 ? ' $' + c : ' (included)');
+        return m.name + (c === null ? ' (on request)' : c > 0 ? ' ' + money(c) : ' (included)');
       });
       if (specialText()) picked.push('SPECIAL ORDER: ' + specialText());
       var body = {
@@ -459,6 +487,12 @@
     if (!heads) { msg('err', 'Please tell us how many people are coming.'); return; }
     if (state.room === 'workshop' && !state.setup) { msg('err', 'Please choose U-shape or classroom.'); return; }
     if (heads > capacityLimit()) { msg('err', 'That room holds ' + capacityLimit() + ' people in the setup you picked.'); return; }
+    if (state.cat === 'custom' && !Object.keys(state.items).some(function (k) { return state.items[k]; })) {
+      msg('err', 'Tick at least one item to build your own, or pick another refreshments option.'); return;
+    }
+    if (state.cat === 'special' && !specialText()) {
+      msg('err', 'Tell us what you need for your special order.'); return;
+    }
 
     // Freeze what was chosen, and what it cost today, onto the booking itself,
     // so editing the menu later never rewrites an old booking.
@@ -480,8 +514,12 @@
         org: $('bkOrg').value.trim() || null,
         headcount: heads,
         setup: state.room === 'workshop' ? state.setup : null,
-        catering: snapshot.length ? 'custom' : 'none',
-        catering_people: snapshot.length ? heads : null,
+        // 'catering' is the column the original four fixed tiers used. What was
+        // ordered now lives in 'addons' below, so this stays 'none' — the
+        // database only accepts the old tier names here, and sending anything
+        // else is what made bookings fail.
+        catering: 'none',
+        catering_people: null,
         catering_quote: (state.waitlist || anyOnRequest()) ? null : quote,
         addons: snapshot,
         addons_note: special || null,
@@ -499,7 +537,12 @@
     })
       .then(function (r) {
         if (r.status === 409) throw new Error('taken');
-        if (!r.ok) throw new Error('HTTP ' + r.status);
+        if (!r.ok) {
+          return r.text().then(function (t) {
+            if (window.console) console.error('Booking was refused (HTTP ' + r.status + '):', t);
+            throw new Error('HTTP ' + r.status);
+          });
+        }
         notifyTeam(name, email, phone);
         showDone(phone);
       })
@@ -561,8 +604,6 @@
       $(id).addEventListener('change', function () { refreshCapHint(); refreshCatHint(); renderSummary(); });
     });
 
-    var sp = $('bkSpecial');
-    if (sp) sp.addEventListener('input', renderSummary);
     $('bkForm').addEventListener('submit', submit);
 
     // deep link: booking.html?room=meeting

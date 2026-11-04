@@ -174,7 +174,7 @@
         '<dt>People</dt><dd>' + esc(r.headcount) + (r.setup ? ' &middot; ' + (r.setup === 'ushape' ? 'U-shape' : 'Classroom') : '') + '</dd>' +
         (r.addons && r.addons.length
            ? '<dt>Ordered</dt><dd>' + r.addons.map(function (a) {
-               return esc(a.name) + (a.line === null ? ' <em>(quote)</em>' : a.line > 0 ? ' $' + a.line : ' (incl.)');
+               return esc(a.name) + (a.line === null ? ' <em>(quote)</em>' : a.line > 0 ? ' $' + (Number(a.line) % 1 === 0 ? Number(a.line).toFixed(0) : Number(a.line).toFixed(2)) : ' (incl.)');
              }).join('<br/>') + '</dd>'
            : '<dt>Catering</dt><dd>' + esc(CAT[r.catering] || r.catering) + (r.catering_people ? ' for ' + esc(r.catering_people) : '') + '</dd>') +
         (r.addons_note ? '<dt>Special order</dt><dd>' + esc(r.addons_note) + '</dd>' : '') +
