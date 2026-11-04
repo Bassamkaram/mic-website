@@ -24,7 +24,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var token = null, view = 'calendar', rows = [];
   var cal = { month: new Date(new Date().getFullYear(), new Date().getMonth(), 1), day: null, room: 'all' };
-  var add = { kind: 'booking', slots: [], setup: null };
+  var add = { kind: 'booking', slots: [], setup: null, fac: {} };
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -47,6 +47,51 @@
     return o;
   }
   function slotText(r) { return r.room === 'workshop' ? (HALF[r.slot] || r.slot) : r.slot + ':00 – ' + String((+r.slot + 1) % 24).padStart(2, '0') + ':00'; }
+
+  /* ---- Event Space: facilities booked by the hour (mic_events_SETUP.sql) ---- */
+  var EV = ['ev_cowork', 'ev_workshop', 'ev_play_full', 'ev_play_part', 'ev_kitchen', 'ev_coffee'];
+  var EVNAME = { ev_cowork: 'Open coworking space', ev_workshop: 'Workshop room', ev_play_full: 'Outdoor playground, all of it',
+                 ev_play_part: 'Outdoor playground, part of it', ev_kitchen: 'Kitchen area', ev_coffee: 'Coffee shop' };
+  function isEv(room) { return /^ev_/.test(room || ''); }
+  function eventsOn() { return (menu || []).some(function (m) { return m.kind === 'facility'; }); }
+  function roomName(room) {
+    if (room === 'meeting') return 'Meeting Room';
+    if (room === 'workshop') return 'Workshop Room';
+    var m = (menu || []).filter(function (x) { return x.code === room; })[0];
+    return m ? m.name : (EVNAME[room] || room);
+  }
+  function hourOf(r) { return r.slot === 'am' ? 8 : r.slot === 'pm' ? 14 : +r.slot; }
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function evRanges(g) {
+    var hrs = {}, out = [];
+    g.forEach(function (r) { hrs[+r.slot] = 1; });
+    Object.keys(hrs).map(Number).sort(function (a, b) { return a - b; }).forEach(function (h) {
+      var last = out[out.length - 1];
+      if (last && last[1] === h) last[1] = h + 1; else out.push([h, h + 1]);
+    });
+    return out.map(function (x) { return pad2(x[0]) + ':00–' + pad2(x[1] % 24) + ':00'; }).join(', ');
+  }
+  function evSpaces(g) {
+    return EV.filter(function (c) { return g.some(function (r) { return r.room === c; }); }).map(roomName);
+  }
+  // the same rules the database enforces, for greying out hours that will not fit
+  function evTaken(code, dayRows, h) {
+    var hh = pad2(h), n = function (room, slot) { return dayRows.filter(function (r) { return r.room === room && r.slot === slot; }).length; };
+    if (code === 'ev_play_part') return n('ev_play_full', hh) > 0 || n('ev_play_part', hh) >= 2;
+    if (code === 'ev_play_full') return n('ev_play_full', hh) > 0 || n('ev_play_part', hh) > 0;
+    if (code === 'ev_workshop') return n('ev_workshop', hh) > 0 || (h >= 8 && h < 14 && n('workshop', 'am') > 0) || (h >= 14 && h < 20 && n('workshop', 'pm') > 0);
+    return n(code, hh) > 0;
+  }
+  function partnerBox(g) {
+    var r = g[0], ids = g.map(function (x) { return x.id; }).join(',');
+    return '<div class="ev-partner">' +
+      '<label class="tk-again"><input type="checkbox" data-partner="' + ids + '"' + (r.partnership ? ' checked' : '') + '/> Partnership with MIC</label>' +
+      (r.partnership ? '<label class="tk-again"><input type="checkbox" data-free="' + ids + '"' + (r.free_of_charge ? ' checked' : '') + '/> Free of charge</label>' : '') +
+      '</div>';
+  }
+  function partnerPill(r) {
+    return r.partnership ? '<span class="adm-pill partner">Partnership' + (r.free_of_charge ? ' · Free' : '') + '</span>' : '';
+  }
   function dateText(d) {
     return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
@@ -122,7 +167,15 @@
     return fetch(SUPABASE_URL + '/rest/v1/room_bookings?id=in.(' + ids.join(',') + ')', {
       method: 'PATCH', headers: Object.assign(hdrs(), { Prefer: 'return=minimal' }), body: JSON.stringify(body)
     }).then(function (r) {
-      if (r.status === 409) { msg('err', 'That slot already has a confirmed booking. Cancel it first.'); return; }
+      if (r.status === 409) {
+        // the event rules explain themselves; a plain double booking gets the usual sentence
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          var why = String(j.message || '');
+          msg('err', /already|has a workshop|has an event/i.test(why) && !/duplicate key/i.test(why)
+            ? esc(why) + ' Cancel that booking first, or pick another time.'
+            : 'That slot already has a confirmed booking. Cancel it first.');
+        });
+      }
       if (!r.ok) throw new Error();
       msg('ok', label); load();
     }).catch(function () { msg('err', 'That did not go through. Try again.'); });
@@ -176,11 +229,24 @@
         if (a === 'reopen')  patch(ids, { status: 'pending' },   'Moved back to pending.');
       });
     });
+    root.querySelectorAll('[data-partner]').forEach(function (c) {
+      c.addEventListener('change', function () {
+        patch(c.dataset.partner.split(','), c.checked ? { partnership: true } : { partnership: false, free_of_charge: false },
+              c.checked ? 'Marked as a partnership with MIC.' : 'No longer marked as a partnership.');
+      });
+    });
+    root.querySelectorAll('[data-free]').forEach(function (c) {
+      c.addEventListener('change', function () {
+        patch(c.dataset.free.split(','), { free_of_charge: c.checked },
+              c.checked ? 'Free of charge. This partnership event costs nothing.' : 'No longer free of charge.');
+      });
+    });
   }
 
   function card(g) {
     var r = g[0], ids = g.map(function (x) { return x.id; }).join(',');
-    var slots = g.map(slotText).join(', '), isBlock = r.status === 'blocked', st = statusOf(r);
+    var ev = isEv(r.room);
+    var slots = ev ? evRanges(g) : g.map(slotText).join(', '), isBlock = r.status === 'blocked', st = statusOf(r);
     var acts = '';
     if (r.status === 'pending' && r.kind === 'booking') {
       acts = '<button class="ok" data-act="confirm" data-ids="' + ids + '">Confirm</button>' +
@@ -194,6 +260,7 @@
     }
     var detail = isBlock ? '' :
       '<dl class="adm-dl">' +
+        (ev ? '<dt>Spaces</dt><dd>' + evSpaces(g).map(esc).join('<br/>') + '</dd>' : '') +
         '<dt>Contact</dt><dd>' + esc(r.name) + (r.org ? ' &middot; ' + esc(r.org) : '') + '</dd>' +
         (r.phone ? '<dt>Phone</dt><dd><a href="tel:' + esc(r.phone) + '">' + esc(r.phone) + '</a></dd>' : '') +
         (r.email ? '<dt>Email</dt><dd><a href="mailto:' + esc(r.email) + '">' + esc(r.email) + '</a></dd>' : '') +
@@ -204,13 +271,15 @@
              }).join('<br/>') + '</dd>'
            : '<dt>Catering</dt><dd>' + esc(CAT[r.catering] || r.catering) + (r.catering_people ? ' for ' + esc(r.catering_people) : '') + '</dd>') +
         (r.addons_note ? '<dt>Special order</dt><dd>' + esc(r.addons_note) + '</dd>' : '') +
-        (r.catering_quote ? '<dt>Quoted</dt><dd>$' + esc(r.catering_quote) + '</dd>' : '') +
+        (r.free_of_charge ? '<dt>Price</dt><dd>Free of charge (partnership)</dd>'
+          : r.catering_quote ? '<dt>Quoted</dt><dd>$' + esc(r.catering_quote) + '</dd>' : '') +
         (r.notes ? '<dt>Notes</dt><dd>' + esc(r.notes) + '</dd>' : '') +
       '</dl>';
     return '<div class="adm-card"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start;">' +
-      '<div><h4>' + (r.room === 'meeting' ? 'Meeting Room' : 'Workshop Room') + '</h4>' +
+      '<div><h4>' + (ev ? 'Event Space' + (r.event_name ? ' &mdash; ' + esc(r.event_name) : '') : esc(roomName(r.room))) + '</h4>' +
       '<div class="when">' + dateText(r.booking_date) + ' &middot; ' + esc(slots) + '</div></div>' +
-      '<span class="adm-pill ' + st + '">' + st + '</span></div>' + detail +
+      '<span>' + partnerPill(r) + ' <span class="adm-pill ' + st + '">' + st + '</span></span></div>' + detail +
+      (ev && !isBlock ? partnerBox(g) : '') +
       (r.admin_note ? '<p class="bk-muted" style="margin-bottom:10px;">' + esc(r.admin_note) + '</p>' : '') +
       '<div class="adm-acts">' + acts + '</div></div>';
   }
@@ -218,7 +287,7 @@
   /* -------------------------------------------------------- calendar -- */
   function visible() {
     return rows.filter(function (r) {
-      return (cal.room === 'all' || r.room === cal.room) &&
+      return (cal.room === 'all' || (cal.room === 'event' ? isEv(r.room) : r.room === cal.room)) &&
              ['pending', 'confirmed', 'blocked'].indexOf(r.status) !== -1;
     });
   }
@@ -230,6 +299,7 @@
         var c = document.createElement('div'); c.className = 'bk-dow'; c.textContent = d; dow.appendChild(c);
       });
     }
+    $('rfEvent').hidden = !eventsOn();
     var y = cal.month.getFullYear(), m = cal.month.getMonth();
     $('admMonth').textContent = cal.month.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 
@@ -265,23 +335,33 @@
   function renderDay(byDay) {
     var box = $('admDayView');
     if (!cal.day) { box.innerHTML = '<p class="bk-muted">Pick a day to see what is booked.</p>'; return; }
-    var list = (byDay[cal.day] || []).slice().sort(function (a, b) {
-      return (a.room + a.slot) < (b.room + b.slot) ? -1 : 1;
+    var items = [], evg = {};
+    (byDay[cal.day] || []).forEach(function (r) {
+      if (isEv(r.room)) { var k = r.request_id + '|' + statusOf(r); (evg[k] = evg[k] || []).push(r); }
+      else items.push({ rows: [r], ev: false, start: hourOf(r) });
     });
+    Object.keys(evg).forEach(function (k) {
+      items.push({ rows: evg[k], ev: true, start: Math.min.apply(null, evg[k].map(hourOf)) });
+    });
+    items.sort(function (a, b) { return a.start - b.start || (a.rows[0].room < b.rows[0].room ? -1 : 1); });
     var html = '<h3>' + dateText(cal.day) + '</h3>' +
-      '<p class="sub">' + (list.length ? list.length + ' slot' + (list.length > 1 ? 's' : '') + ' taken' : 'Nothing booked — the whole day is free.') + '</p>';
-    html += list.map(function (r) {
-      var st = statusOf(r);
+      '<p class="sub">' + (items.length ? items.length + ' booking' + (items.length > 1 ? 's' : '') : 'Nothing booked — the whole day is free.') + '</p>';
+    html += items.map(function (it) {
+      var r = it.rows[0], st = statusOf(r), ids = it.rows.map(function (x) { return x.id; }).join(',');
       var acts = st === 'pending'
-        ? '<button class="ok" data-act="confirm" data-ids="' + r.id + '">Confirm</button><button class="no" data-act="reject" data-ids="' + r.id + '">Reject</button>'
-        : '<button class="no" data-act="cancel" data-ids="' + r.id + '">' + (r.status === 'blocked' ? 'Re-open' : 'Cancel') + '</button>';
+        ? '<button class="ok" data-act="confirm" data-ids="' + ids + '">Confirm</button><button class="no" data-act="reject" data-ids="' + ids + '">Reject</button>'
+        : '<button class="no" data-act="cancel" data-ids="' + ids + '">' + (r.status === 'blocked' ? 'Re-open' : 'Cancel') + '</button>';
       if (r.status !== 'blocked' && stasks) acts = '<button data-mktask="' + r.request_id + '" title="A task for staff about this booking">+ Task</button>' + acts;
-      return '<div class="adm-slotrow">' +
-        '<span class="t">' + esc(slotText(r)) + '</span>' +
-        '<span class="who">' + (r.status === 'blocked' ? '<em>Closed</em>' : esc(r.name || '—')) +
-          '<small>' + (r.room === 'meeting' ? 'Meeting Room' : 'Workshop Room') +
+      var who = r.status === 'blocked' ? '<em>Closed</em>' : esc((it.ev && r.event_name) || r.name || '—');
+      var small = it.ev ? 'Event Space: ' + evSpaces(it.rows).join(', ') + (r.event_name && r.name ? ' · ' + r.name : '') : roomName(r.room);
+      return '<div class="adm-slotrow' + (it.ev ? ' is-event' : '') + '">' +
+        '<span class="t">' + esc(it.ev ? evRanges(it.rows) : slotText(r)) + '</span>' +
+        '<span class="who">' + who +
+          '<small>' + esc(small) +
           (r.headcount ? ' · ' + esc(r.headcount) + ' people' : '') +
-          (r.admin_note ? ' · ' + esc(r.admin_note) : '') + '</small></span>' +
+          (r.admin_note ? ' · ' + esc(r.admin_note) : '') + '</small>' +
+          (it.ev && r.status !== 'blocked' ? partnerBox(it.rows) : '') + '</span>' +
+        partnerPill(r) +
         '<span class="adm-pill ' + st + '">' + st + '</span>' +
         '<span class="acts">' + acts + '</span></div>';
     }).join('');
@@ -304,20 +384,63 @@
 
   /* ------------------------------------------------------ add booking -- */
   function addLimit() {
+    if ($('addRoom').value === 'event') return 1000;
     if ($('addRoom').value === 'meeting') return 15;
     return add.setup === 'ushape' ? 30 : 40;
   }
+  function renderAddFac() {
+    var box = $('addFac');
+    var list = (menu || []).filter(function (m) { return m.kind === 'facility' && EV.indexOf(m.code) !== -1; });
+    box.innerHTML = list.map(function (m) {
+      return '<label class="pick"><input type="checkbox" data-fac="' + m.code + '"' + (add.fac[m.code] ? ' checked' : '') + '/>' +
+        '<span class="lab">' + esc(m.name) + '</span></label>';
+    }).join('');
+    box.querySelectorAll('[data-fac]').forEach(function (c) {
+      c.addEventListener('change', function () {
+        var code = c.dataset.fac;
+        if (c.checked) {
+          add.fac[code] = true;
+          // all of the playground, or part of it: never both
+          if (code === 'ev_play_full') delete add.fac.ev_play_part;
+          if (code === 'ev_play_part') delete add.fac.ev_play_full;
+        } else delete add.fac[code];
+        add.slots = [];
+        renderAdd();
+      });
+    });
+  }
+  function addFacCodes() { return EV.filter(function (c) { return add.fac[c]; }); }
+
   function renderAdd() {
-    var room = $('addRoom').value;
+    var room = $('addRoom').value, ev = room === 'event';
+    $('addRoomEvent').hidden = !eventsOn(); $('addRoomEvent').disabled = !eventsOn();
     $('addSetupRow').hidden = room !== 'workshop';
     $('addWho').hidden = add.kind === 'blocked';
-    $('addSlotHint').textContent = room === 'workshop' ? 'pick one half-day, or both' : 'pick one or more hours';
+    $('addFacRow').hidden = !ev;
+    $('addEventRow').hidden = !ev;
+    $('addPartnerRow').hidden = !ev || add.kind === 'blocked';
+    $('addFreeRow').hidden = !$('addPartner').checked;
+    if (ev) renderAddFac();
+    $('addSlotHint').textContent = room === 'workshop' ? 'pick one half-day, or both'
+      : ev ? (addFacCodes().length ? 'pick the hours of the event' : 'pick the spaces first') : 'pick one or more hours';
 
     var date = $('addDate').value;
     var taken = {};
-    rows.forEach(function (r) {
-      if (r.room === room && r.booking_date === date && ['confirmed', 'blocked'].indexOf(r.status) !== -1) taken[r.slot] = true;
-    });
+    var dayRows = rows.filter(function (r) { return r.booking_date === date && ['confirmed', 'blocked'].indexOf(r.status) !== -1; });
+    if (ev) {
+      var codes = addFacCodes();
+      for (var h = 0; h < 24; h++) {
+        if (!codes.length || codes.some(function (c) { return evTaken(c, dayRows, h); })) taken[pad2(h)] = true;
+      }
+    } else {
+      dayRows.forEach(function (r) {
+        if (r.room === room) taken[r.slot] = true;
+        // an event in the workshop room takes the half-day it falls in
+        if (room === 'workshop' && r.room === 'ev_workshop') {
+          var x = +r.slot; if (x >= 8 && x < 14) taken.am = true; else if (x >= 14 && x < 20) taken.pm = true;
+        }
+      });
+    }
 
     var wrap = $('addSlots');
     wrap.className = 'bk-slots' + (room === 'workshop' ? ' bk-slots--half' : '');
@@ -348,6 +471,11 @@
     $('addHeads').max = String(lim);
 
     if (add.kind === 'blocked' || !add.slots.length) { $('addTotal').textContent = '—'; return; }
+    if (ev) {
+      var est = addEventEstimate(n);
+      $('addTotal').textContent = est.free ? 'Free (partnership)' : est.total === null ? 'On request' : '$' + est.total + (est.partial ? ' + spaces on request' : '');
+      return;
+    }
     var rooms = add.slots.length * (room === 'workshop' ? RATE_WORKSHOP_HALF : RATE_MEETING_HOUR);
     var pp = CATPP[$('addCat').value];
     var food = (pp && n) ? pp * n : 0;
@@ -355,12 +483,28 @@
       ? '$' + rooms + ' + meal on request' : '$' + (rooms + food);
   }
 
+  // the spaces' catalogue prices for these hours, plus the refreshments chosen
+  function addEventEstimate(n) {
+    if ($('addPartner').checked && $('addFree').checked) return { free: true, total: 0 };
+    var known = 0, unknown = 0;
+    addFacCodes().forEach(function (c) {
+      var m = (menu || []).filter(function (x) { return x.code === c; })[0];
+      if (m && m.price != null) known += m.unit === 'flat' ? Number(m.price) : Number(m.price) * add.slots.length;
+      else unknown++;
+    });
+    var pp = CATPP[$('addCat').value], food = (pp && n) ? pp * n : 0;
+    if (!known && unknown) return { total: null };
+    return { total: known + food, partial: unknown > 0 };
+  }
+
   function addGo() {
-    var room = $('addRoom').value, date = $('addDate').value;
+    var room = $('addRoom').value, date = $('addDate').value, ev = room === 'event';
     if (!date) { msg('err', 'Pick a date.'); return; }
+    if (ev && !addFacCodes().length) { msg('err', 'Pick at least one space for the event.'); return; }
     if (!add.slots.length) { msg('err', 'Pick at least one time slot.'); return; }
     var n = parseInt($('addHeads').value, 10) || null;
     if (add.kind === 'booking') {
+      if (ev && !$('addEvent').value.trim()) { msg('err', 'What is the event called?'); return; }
       if (!$('addName').value.trim()) { msg('err', 'Who is the room for? Add a name.'); return; }
       if (room === 'workshop' && !add.setup) { msg('err', 'Pick U-shape or classroom.'); return; }
       if (n && n > addLimit()) { msg('err', 'That room holds ' + addLimit() + ' people in this setup.'); return; }
@@ -370,9 +514,14 @@
     var pp = CATPP[$('addCat').value];
     var quote = add.kind === 'blocked' ? null : rooms + ((pp && n) ? pp * n : 0);
 
-    var payload = add.slots.map(function (k) {
+    var free = ev && $('addPartner').checked && $('addFree').checked;
+    if (ev) { var est = addEventEstimate(n); quote = free ? 0 : est.partial ? null : est.total; }
+    var units = ev ? addFacCodes() : [room], pairs = [];
+    units.forEach(function (u) { add.slots.forEach(function (k) { pairs.push([u, k]); }); });
+    var payload = pairs.map(function (pk) {
+      var k = pk[1];
       var r = {
-        room: room, booking_date: date, slot: k,
+        room: pk[0], booking_date: date, slot: k,
         status: add.kind === 'blocked' ? 'blocked' : 'confirmed', kind: 'booking',
         admin_note: $('addNote').value.trim() || (add.kind === 'blocked' ? 'Closed by staff' : 'Added by staff')
       };
@@ -386,7 +535,12 @@
         r.setup = room === 'workshop' ? add.setup : null;
         r.catering = $('addCat').value;
         r.catering_people = $('addCat').value === 'none' ? null : n;
-        r.catering_quote = $('addCat').value === 'meal' ? null : quote;
+        r.catering_quote = free ? 0 : $('addCat').value === 'meal' ? null : quote;
+        if (ev) {
+          r.event_name = $('addEvent').value.trim();
+          r.partnership = $('addPartner').checked;
+          r.free_of_charge = free;
+        }
       }
       return r;
     });
@@ -396,11 +550,19 @@
       method: 'POST', headers: Object.assign(hdrs(), { Prefer: 'return=minimal' }), body: JSON.stringify(payload)
     }).then(function (r) {
       btn.disabled = false; btn.textContent = 'Add to the calendar';
-      if (r.status === 409) { msg('err', 'One of those slots is already taken. Refresh and pick another.'); load(); return; }
+      if (r.status === 409) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          var why = String(j.message || '');
+          msg('err', /already|has a workshop|has an event/i.test(why) && !/duplicate key/i.test(why)
+            ? esc(why) + ' Pick another time.' : 'One of those slots is already taken. Refresh and pick another.');
+          load();
+        });
+      }
       if (!r.ok) throw new Error();
-      msg('ok', (add.kind === 'blocked' ? 'Room closed' : 'Booking added') + ' for ' + dateText(date) + '. It shows as taken on the public calendar now.');
-      ['addName','addPhone','addEmail','addOrg','addHeads','addNote'].forEach(function (i) { $(i).value = ''; });
-      add.slots = []; add.setup = null;
+      msg('ok', (add.kind === 'blocked' ? (ev ? 'Spaces closed' : 'Room closed') : ev ? 'Event added' : 'Booking added') + ' for ' + dateText(date) + '. It shows as taken on the public calendar now.');
+      ['addName','addPhone','addEmail','addOrg','addHeads','addNote','addEvent'].forEach(function (i) { $(i).value = ''; });
+      $('addPartner').checked = false; $('addFree').checked = false;
+      add.slots = []; add.setup = null; add.fac = {};
       document.querySelectorAll('#addSetup [data-s]').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
       cal.day = date; load();
     }).catch(function () {
@@ -411,7 +573,8 @@
 
   /* ----------------------------------------- catering & extras menu -- */
   var menu = [];
-  var KINDLABEL = { package: 'Catering packages', item: 'Catering items (build your own)', extra: 'Equipment and services' };
+  var KINDLABEL = { package: 'Catering packages', item: 'Catering items (build your own)', extra: 'Equipment and services',
+                    facility: 'Event Space — the spaces, priced per hour (empty means on request)' };
 
   function loadMenu() {
     return fetch(SUPABASE_URL + '/rest/v1/booking_addons?select=*&order=kind.asc,sort.asc', { headers: hdrs() })
@@ -426,7 +589,7 @@
   function renderMenu() {
     var box = $('menuGroups');
     if (!menu.length) { box.innerHTML = '<p class="bk-muted">Nothing on the menu yet.</p>'; return; }
-    box.innerHTML = ['package','item','extra'].map(function (k) {
+    box.innerHTML = ['package','item','extra','facility'].map(function (k) {
       var set = menu.filter(function (m) { return m.kind === k; });
       if (!set.length) return '';
       return '<div class="menu-group"><h4>' + KINDLABEL[k] + '</h4>' + set.map(function (m) {
@@ -442,7 +605,7 @@
           '</select>' +
           '<label class="m-toggle"><input type="checkbox" data-f="active"' + (m.active ? ' checked' : '') + '/>live</label>' +
           '<span class="m-act"><button class="save" data-m="save">Save</button>' +
-          '<button class="del" data-m="del">Delete</button></span></div>';
+          (m.kind === 'facility' ? '' : '<button class="del" data-m="del">Delete</button>') + '</span></div>';
       }).join('') + '</div>';
     }).join('');
 
@@ -524,9 +687,9 @@
       var s = r.slot === 'am' ? [8, 14] : r.slot === 'pm' ? [14, 20] : [+r.slot, +r.slot + 1];
       from = Math.min(from, s[0]); to = Math.max(to, s[1]);
     });
-    return (g[0].room === 'meeting' ? 'Meeting Room' : g[0].room === 'workshop' ? 'Workshop Room' : g[0].room) + ' · ' +
+    return (isEv(g[0].room) ? 'Event Space' : roomName(g[0].room)) + ' · ' +
       new Date(g[0].booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) +
-      ' ' + hh(from) + '–' + hh(to) + (g[0].name ? ' · ' + g[0].name : '');
+      ' ' + hh(from) + '–' + hh(to) + ((g[0].event_name || g[0].name) ? ' · ' + (g[0].event_name || g[0].name) : '');
   }
   // a second tap within four seconds confirms
   function confirmTap(btn, label) {
@@ -1037,6 +1200,8 @@
       $(id).addEventListener('input',  function () { renderAdd(); });
     });
     $('addGo').addEventListener('click', addGo);
+    $('addPartner').addEventListener('change', function () { if (!$('addPartner').checked) $('addFree').checked = false; renderAdd(); });
+    $('addFree').addEventListener('change', renderAdd);
     $('newGo').addEventListener('click', menuAdd);
 
     $('tkGo').addEventListener('click', taskSubmit);

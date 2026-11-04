@@ -40,8 +40,13 @@
     cat: 'none',         // 'none' | 'pkg:<id>' | 'custom' | 'special' — one or the other, never both
     items: {},           // build-your-own items, only counted while cat is 'custom'
     extras: {},          // equipment and setup, independent of the catering choice
-    special: ''          // special-order text, only counted while cat is 'special'
+    special: '',         // special-order text, only counted while cat is 'special'
+    fac: {},             // Event Space: chosen facility codes -> true
+    avail: {}            // 'YYYY-MM-DD' -> [{ room, slot }] as the public calendar shows them
   };
+  // Event Space facilities, as rooms booked by the hour (see mic_events_SETUP.sql).
+  // Names, descriptions and prices come from the catalogue the admins edit.
+  var EVENT_UNITS = ['ev_cowork', 'ev_workshop', 'ev_play_full', 'ev_play_part', 'ev_kitchen', 'ev_coffee'];
 
   var MENU = [];         // catering packages, items and extras, from the database
 
@@ -65,34 +70,108 @@
     var out = []; for (var h = 0; h < 24; h++) out.push(String(h).padStart(2, '0'));
     return out;
   }
+  function two(n) { return String(n).padStart(2, '0'); }
+  function isEvent() { return state.room === 'event'; }
+  function facilities() {   // the facility lines the admins have switched on, in their order
+    return MENU.filter(function (m) { return m.kind === 'facility' && m.code && EVENT_UNITS.indexOf(m.code) !== -1; });
+  }
+  function facByCode(code) { return facilities().filter(function (m) { return m.code === code; })[0] || null; }
+  function chosenFac() { return EVENT_UNITS.filter(function (c) { return state.fac[c]; }); }
+  function facName(code) {
+    var m = facByCode(code);
+    return m ? m.name : code;
+  }
+  /* ['18','19','21'] -> [[18,20],[21,22]] */
+  function hourRanges(slots) {
+    var out = [];
+    slots.map(Number).sort(function (a, b) { return a - b; }).forEach(function (h) {
+      var last = out[out.length - 1];
+      if (last && last[1] === h) last[1] = h + 1; else out.push([h, h + 1]);
+    });
+    return out;
+  }
+  function rangesText(slots) {
+    return hourRanges(slots).map(function (r) { return two(r[0]) + ':00 – ' + two(r[1] % 24) + ':00'; }).join(', ');
+  }
   function msg(kind, text) {
     $('bkMsg').innerHTML = text
       ? '<div class="bk-msg bk-msg--' + kind + '">' + text + '</div>' : '';
   }
 
   /* ------------------------------------------------- availability load -- */
+  // The workshop room is shared: half-day workshops and events by the hour
+  // block each other, so each needs to see the other's bookings.
+  function roomsToLoad() {
+    if (isEvent()) return EVENT_UNITS.concat(['workshop']);
+    if (state.room === 'workshop') return ['workshop', 'ev_workshop'];
+    return [state.room];
+  }
+  var loadSeq = 0;   // only the newest month's answer may be drawn, however the replies arrive
   function loadMonth() {
     if (!state.room) return Promise.resolve();
+    var seq = ++loadSeq;
     var from = iso(state.month);
     var last = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 0);
     var to = iso(last);
-    var url = api + 'room_availability?room=eq.' + state.room +
+    var url = api + 'room_availability?room=in.(' + roomsToLoad().join(',') + ')' +
               '&booking_date=gte.' + from + '&booking_date=lte.' + to +
-              '&select=booking_date,slot';
+              '&select=room,booking_date,slot';
     return fetch(url, { headers: headers })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (rows) {
-        state.taken = {};
-        rows.forEach(function (row) {
-          (state.taken[row.booking_date] = state.taken[row.booking_date] || {})[row.slot] = true;
-        });
+        if (seq !== loadSeq) return;
+        state.avail = {};
+        rows.forEach(function (row) { (state.avail[row.booking_date] = state.avail[row.booking_date] || []).push(row); });
+        computeTaken();
         msg('', '');
       })
       .catch(function () {
-        state.taken = {};
+        if (seq !== loadSeq) return;
+        state.avail = {}; state.taken = {};
         msg('warn', 'We could not load live availability just now, so every slot is shown as ' +
             'free. Send your request anyway and we will tell you if the time is already taken.');
       });
+  }
+
+  /* Which slots are taken for what is being asked for. The database applies
+     exactly the same rules when a booking is confirmed. */
+  function count(rows, room, slot) {
+    var n = 0; rows.forEach(function (r) { if (r.room === room && r.slot === slot) n++; }); return n;
+  }
+  function facTaken(code, rows, hh) {
+    var h = +hh;
+    if (code === 'ev_play_part') return count(rows, 'ev_play_full', hh) > 0 || count(rows, 'ev_play_part', hh) >= 2;
+    if (code === 'ev_play_full') return count(rows, 'ev_play_full', hh) > 0 || count(rows, 'ev_play_part', hh) > 0;
+    if (code === 'ev_workshop') {
+      return count(rows, 'ev_workshop', hh) > 0 ||
+        (h >= 8 && h < 14 && count(rows, 'workshop', 'am') > 0) ||
+        (h >= 14 && h < 20 && count(rows, 'workshop', 'pm') > 0);
+    }
+    return count(rows, code, hh) > 0;
+  }
+  function computeTaken() {
+    state.taken = {};
+    var codes = chosenFac();
+    Object.keys(state.avail).forEach(function (d) {
+      var rows = state.avail[d], t = {};
+      if (isEvent()) {
+        for (var h = 0; h < 24; h++) {
+          var hh = two(h);
+          if (codes.some(function (c) { return facTaken(c, rows, hh); })) t[hh] = true;
+        }
+      } else if (state.room === 'workshop') {
+        rows.forEach(function (r) {
+          if (r.room === 'workshop') t[r.slot] = true;
+          else if (r.room === 'ev_workshop') {
+            var x = +r.slot;
+            if (x >= 8 && x < 14) t.am = true; else if (x >= 14 && x < 20) t.pm = true;
+          }
+        });
+      } else {
+        rows.forEach(function (r) { if (r.room === state.room) t[r.slot] = true; });
+      }
+      state.taken[d] = t;
+    });
   }
 
   /* --------------------------------------------------------- calendar -- */
@@ -155,7 +234,9 @@
 
     $('bkSlotHint').textContent = state.room === 'workshop'
       ? prettyDate(state.date) + ' — pick one half-day, or both for a full day at $200.'
-      : prettyDate(state.date) + ' — pick one or more hours. The room is available around the clock.';
+      : isEvent()
+        ? prettyDate(state.date) + ' — pick the hours of your event, setting up included. The spaces are available around the clock.'
+        : prettyDate(state.date) + ' — pick one or more hours. The room is available around the clock.';
 
     allSlots().forEach(function (k) {
       var isTaken = !!taken[k];
@@ -201,8 +282,19 @@
   }
 
   /* ---------------------------------------------------------- summary -- */
+  /* Event Space: one line per facility, priced per hour, or null when quoted */
+  function facilityCosts() {
+    return chosenFac().map(function (c) {
+      var m = facByCode(c);
+      var cost = (m && m.price != null)
+        ? (m.unit === 'flat' ? Number(m.price) : Number(m.price) * state.slots.length)
+        : null;
+      return { code: c, name: facName(c), cost: cost };
+    });
+  }
   function priceRooms() {
     if (!state.slots.length) return 0;
+    if (isEvent()) return facilityCosts().reduce(function (s, f) { return s + (f.cost || 0); }, 0);
     return state.room === 'workshop'
       ? state.slots.length * RATE_WORKSHOP_HALF
       : state.slots.length * RATE_MEETING_HOUR;
@@ -212,9 +304,13 @@
   function renderSummary() {
     if (!state.slots.length) { $('bkSummary').hidden = true; return; }
     var rows = [];
-    rows.push(['Room', state.room === 'meeting' ? 'Meeting Room' : 'Workshop Room']);
+    rows.push(['Room', state.room === 'meeting' ? 'Meeting Room' : state.room === 'workshop' ? 'Workshop Room' : 'Event Space']);
+    if (isEvent()) rows.push(['Spaces', chosenFac().map(function (c) { return escHtml(facName(c)); }).join('<br/>')]);
     rows.push(['Date', prettyDate(state.date)]);
-    if (state.room === 'workshop') {
+    if (isEvent()) {
+      rows.push(['Time', rangesText(state.slots)]);
+      rows.push(['Hours', String(state.slots.length)]);
+    } else if (state.room === 'workshop') {
       rows.push(['Time', state.slots.length === 2 ? 'Full day (08:00 – 20:00)'
                                                   : slotLabel(state.slots[0])]);
     } else {
@@ -234,7 +330,15 @@
     if (state.waitlist) {
       html += '<div class="bk-line is-muted"><span>Waitlist request</span><span>no charge</span></div>';
     } else {
-      html += '<div class="bk-line"><span>Room</span><span>' + money(roomCost) + '</span></div>';
+      if (isEvent()) {
+        facilityCosts().forEach(function (f) {
+          html += f.cost === null
+            ? '<div class="bk-line is-muted"><span>' + escHtml(f.name) + '</span><span>on request</span></div>'
+            : '<div class="bk-line"><span>' + escHtml(f.name) + '</span><span>' + money(f.cost) + '</span></div>';
+        });
+      } else {
+        html += '<div class="bk-line"><span>Room</span><span>' + money(roomCost) + '</span></div>';
+      }
       extras.forEach(function (m) {
         var c = lineCost(m);
         if (c === null) {
@@ -262,6 +366,7 @@
 
   /* -------------------------------------------------------- capacity -- */
   function capacityLimit() {
+    if (isEvent()) return 1000;
     if (state.room === 'meeting') return CAP.meeting;
     if (state.setup) return CAP.workshop[state.setup];
     return CAP.workshop.classroom;
@@ -269,7 +374,10 @@
   function refreshCapHint() {
     var el = $('bkCapHint'); if (!el) return;
     var lim = capacityLimit(), n = headcount();
-    if (state.room === 'workshop' && !state.setup) {
+    if (isEvent()) {
+      el.textContent = 'Roughly is fine. We plan the spaces around it.';
+      el.className = 'hint';
+    } else if (state.room === 'workshop' && !state.setup) {
       el.textContent = 'Pick a setup above — 30 in U-shape, 40 classroom.';
       el.className = 'hint';
     } else if (n > lim) {
@@ -289,7 +397,7 @@
 
   /* ------------------------------------------- catering and extras -- */
   function loadMenu() {
-    return fetch(api + 'booking_addons?select=id,kind,name,description,price,unit&order=kind.asc,sort.asc', { headers: headers })
+    return fetch(api + 'booking_addons?select=*&order=kind.asc,sort.asc', { headers: headers })
       .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
       .then(function (d) { MENU = d; })
       .catch(function () { MENU = []; });
@@ -325,7 +433,8 @@
   }
   function specialText() { return state.cat === 'special' ? String(state.special || '').trim() : ''; }
   function anyOnRequest() {
-    return chosen().some(function (m) { return m.price == null; }) || state.cat === 'special';
+    return chosen().some(function (m) { return m.price == null; }) || state.cat === 'special' ||
+      (isEvent() && facilityCosts().some(function (f) { return f.cost === null; }));
   }
 
   /* the price shown on the right of each option */
@@ -413,6 +522,75 @@
     });
   }
 
+  /* ---------------------------------------------- Event Space spaces -- */
+  function renderFacilities() {
+    var box = $('bkFac'), list = facilities();
+    var play = { full: facByCode('ev_play_full'), part: facByCode('ev_play_part') };
+    var playOn = !!(state.fac.ev_play_full || state.fac.ev_play_part);
+    // The playground's two lines become one choice, "all of it" or "part of it",
+    // shown where the playground sits in the catalogue's order.
+    var html = '', playDone = false;
+    list.forEach(function (m) {
+      if (m.code !== 'ev_play_full' && m.code !== 'ev_play_part') {
+        html += opt('checkbox', 'bkfac', m.code, !!state.fac[m.code], m.name, m.description, amtHtml(m));
+        return;
+      }
+      if (playDone) return;
+      playDone = true;
+      html += opt('checkbox', 'bkfac', 'play', playOn, 'Outdoor playground', 'All of it, or a part shared with one other event', '');
+      html += '<div class="pick-sub" id="bkPlaySub"' + (playOn ? '' : ' hidden') + '><div class="pick-list">' +
+        (play.full ? opt('radio', 'bkplay', 'ev_play_full', !!state.fac.ev_play_full, 'All of it', play.full.description, amtHtml(play.full)) : '') +
+        (play.part ? opt('radio', 'bkplay', 'ev_play_part', !!state.fac.ev_play_part, 'Part of it', play.part.description || 'Shared with at most one other event.', amtHtml(play.part)) : '') +
+        '</div></div>';
+    });
+    box.innerHTML = html;
+    box.querySelectorAll('input[name="bkfac"]').forEach(function (i) {
+      i.addEventListener('change', function () {
+        if (i.value === 'play') {
+          delete state.fac.ev_play_full; delete state.fac.ev_play_part;
+          if (i.checked) state.fac[play.part ? 'ev_play_part' : 'ev_play_full'] = true;   // part is the gentler default
+          renderFacilities();
+        } else {
+          if (i.checked) state.fac[i.value] = true; else delete state.fac[i.value];
+        }
+        facilitiesChanged();
+      });
+    });
+    box.querySelectorAll('input[name="bkplay"]').forEach(function (i) {
+      i.addEventListener('change', function () {
+        delete state.fac.ev_play_full; delete state.fac.ev_play_part;
+        state.fac[i.value] = true;
+        facilitiesChanged();
+      });
+    });
+  }
+  // A different set of spaces means different free hours.
+  function facilitiesChanged() {
+    computeTaken();
+    var any = chosenFac().length > 0;
+    $('bkStepDate').hidden = !any;
+    if (!any) {
+      state.date = null; state.slots = []; state.waitlist = false;
+      $('bkStepSlots').hidden = true; $('bkStepForm').hidden = true; $('bkSummary').hidden = true;
+      msg('', '');
+      return;
+    }
+    if (state.slots.length) {
+      var taken = state.taken[state.date] || {};
+      var n = state.slots.filter(function (k) { return taken[k]; }).length;
+      if (n === 0) state.waitlist = false;
+      else if (n === state.slots.length) state.waitlist = true;
+      else {
+        state.slots = []; state.waitlist = false;
+        $('bkStepForm').hidden = true; $('bkSummary').hidden = true;
+        msg('warn', 'Some of the hours you picked are not free for those spaces. Pick your time again.');
+      }
+    }
+    renderCalendar();
+    if (state.date) renderSlots();
+    renderSummary();
+  }
+
   /* ------------------------------------------------- email the team -- */
   /* Netlify Forms already powers every other form on the site, so a booking
      that has safely reached the database is copied here purely so Netlify
@@ -424,8 +602,12 @@
       var people = headcount();
       var time = state.room === 'workshop'
         ? (state.slots.length === 2 ? 'Full day (08:00-20:00)' : slotLabel(state.slots[0]))
-        : state.slots.map(function (s) { return s + ':00'; }).join(', ') + '  (' + state.slots.length + 'h)';
-      var money = state.waitlist ? 'waitlist, no charge'
+        : isEvent()
+          ? rangesText(state.slots) + '  (' + state.slots.length + 'h)'
+          : state.slots.map(function (s) { return s + ':00'; }).join(', ') + '  (' + state.slots.length + 'h)';
+      // (named "estimate", not "money": a local "money" would hide the money()
+      //  function below and silently stop this email for every normal booking)
+      var estimate = state.waitlist ? 'waitlist, no charge'
         : money(priceRooms() + addonsTotal()) + (anyOnRequest() ? ' plus items to quote' : '');
       var picked = chosen().map(function (m) {
         var c = lineCost(m);
@@ -434,7 +616,9 @@
       if (specialText()) picked.push('SPECIAL ORDER: ' + specialText());
       var body = {
         'form-name': 'room-booking',
-        room:     state.room === 'meeting' ? 'Meeting Room' : 'Workshop Room',
+        room:     state.room === 'meeting' ? 'Meeting Room' : state.room === 'workshop' ? 'Workshop Room'
+                  : 'Event Space: ' + chosenFac().map(facName).join(', '),
+        event:    isEvent() ? ($('bkEvent').value.trim() || '-') : '-',
         date:     prettyDate(state.date),
         time:     time,
         request:  state.waitlist ? 'WAITLIST request' : 'Booking request',
@@ -443,7 +627,7 @@
         people:   String(people),
         setup:    state.setup ? (state.setup === 'ushape' ? 'U-shape' : 'Classroom') : '-',
         catering: picked.length ? picked.join('; ') : 'none',
-        estimate: money,
+        estimate: estimate,
         special:  specialText() || '-',
         notes:    $('bkNotes').value.trim() || '-'
       };
@@ -463,7 +647,7 @@
     $('bkDoneText').textContent = state.waitlist
       ? 'If that booking is cancelled we will contact you first' + (phone ? ', on ' + phone : '') +
         '. Nothing is charged for a waitlist place.'
-      : 'We will confirm ' + (state.room === 'meeting' ? 'the meeting room' : 'the workshop room') +
+      : 'We will confirm ' + (state.room === 'meeting' ? 'the meeting room' : state.room === 'workshop' ? 'the workshop room' : 'your event space') +
         ' for ' + prettyDate(state.date) + ' within one working day, by email and phone. ' +
         'Nothing is charged until you agree the final figure.';
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -486,6 +670,8 @@
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg('err', 'That email address does not look right.'); return; }
     if (!heads) { msg('err', 'Please tell us how many people are coming.'); return; }
     if (state.room === 'workshop' && !state.setup) { msg('err', 'Please choose U-shape or classroom.'); return; }
+    if (isEvent() && !chosenFac().length) { msg('err', 'Pick at least one space for your event.'); return; }
+    if (isEvent() && !$('bkEvent').value.trim()) { msg('err', 'What is the event called? A few words is enough.'); $('bkEvent').focus(); return; }
     if (heads > capacityLimit()) { msg('err', 'That room holds ' + capacityLimit() + ' people in the setup you picked.'); return; }
     if (state.cat === 'custom' && !Object.keys(state.items).some(function (k) { return state.items[k]; })) {
       msg('err', 'Tick at least one item to build your own, or pick another refreshments option.'); return;
@@ -506,9 +692,14 @@
     var special = specialText();
 
     var reqId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
-    var rows = state.slots.map(function (k) {
+    // An event is one request: every chosen space, for every chosen hour.
+    var units = isEvent() ? chosenFac() : [state.room];
+    var pairs = [];
+    units.forEach(function (u) { state.slots.forEach(function (k) { pairs.push([u, k]); }); });
+    var rows = pairs.map(function (pk) {
+      var k = pk[1];
       var r = {
-        room: state.room, booking_date: state.date, slot: k,
+        room: pk[0], booking_date: state.date, slot: k,
         status: 'pending', kind: state.waitlist ? 'waitlist' : 'booking',
         name: name, email: email, phone: phone,
         org: $('bkOrg').value.trim() || null,
@@ -525,6 +716,7 @@
         addons_note: special || null,
         notes: $('bkNotes').value.trim() || null
       };
+      if (isEvent()) r.event_name = $('bkEvent').value.trim();
       if (reqId) r.request_id = reqId;
       return r;
     });
@@ -560,6 +752,7 @@
   /* ------------------------------------------------------------ wire -- */
   function init() {
     if (!$('bkApp')) return;
+    var want = new URLSearchParams(location.search).get('room');
 
     document.querySelectorAll('.bk-room').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -569,15 +762,32 @@
           o.setAttribute('aria-pressed', String(o === b));
         });
         $('bkSetupRow').hidden = state.room !== 'workshop';
-        $('bkStepDate').hidden = false;
+        $('bkEventRow').hidden = !isEvent();
+        $('bkFacPanel').hidden = !isEvent();
+        if (isEvent()) renderFacilities();
+        $('bkHeads').placeholder = isEvent() ? 'e.g. 80' : 'e.g. 12';
+        $('bkStepDate').hidden = isEvent() && !chosenFac().length;
         $('bkStepSlots').hidden = true;
         $('bkStepForm').hidden = true;
         $('bkSummary').hidden = true;
         refreshCapHint();
         if (!MENU.length) { loadMenu().then(renderMenu); } else { renderMenu(); }
         loadMonth().then(renderCalendar);
-        $('bkStepDate').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        (isEvent() ? $('bkFacPanel') : $('bkStepDate')).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       });
+    });
+
+    // Event Space is offered once its facilities are in the catalogue
+    // (mic_events_SETUP.sql). Prices shown on the tile follow the catalogue.
+    loadMenu().then(function () {
+      var list = facilities();
+      if (!list.length) return;
+      $('bkEventTile').hidden = false;
+      var priced = list.filter(function (m) { return m.price != null; }).map(function (m) { return Number(m.price); });
+      if (priced.length === list.length && priced.length) {
+        $('bkEventRate').innerHTML = 'From ' + money(Math.min.apply(null, priced)) + ' <span>/ hour per space</span>';
+      }
+      if (want === 'event') $('bkEventTile').click();
     });
 
     $('bkPrev').addEventListener('click', function () {
@@ -606,8 +816,7 @@
 
     $('bkForm').addEventListener('submit', submit);
 
-    // deep link: booking.html?room=meeting
-    var want = new URLSearchParams(location.search).get('room');
+    // deep link: booking.html?room=meeting (or workshop, or event once offered)
     if (want === 'meeting' || want === 'workshop') {
       var t = document.querySelector('.bk-room[data-room="' + want + '"]');
       if (t) t.click();

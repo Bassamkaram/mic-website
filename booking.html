@@ -130,6 +130,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               <div class="rate">$100 <span>/ half-day &middot; $200 / full day</span></div>
             </div>
           </button>
+          <button type="button" class="bk-room bk-room--wide" data-room="event" aria-pressed="false" id="bkEventTile" hidden>
+            <img src="events-hero-bg.jpg" alt="An event at MIC" loading="lazy"/>
+            <div class="b">
+              <h3>Event Space</h3>
+              <div class="meta">One or more spaces for your event: the open coworking space, the workshop room, the outdoor playground, the kitchen and the coffee shop. Booked by the hour, at any time of day.</div>
+              <div class="rate" id="bkEventRate">On request <span>/ priced for your event</span></div>
+            </div>
+          </button>
+        </div>
+
+        <div class="bk-panel bk-fac" id="bkFacPanel" hidden>
+          <h4>Which spaces?</h4>
+          <p class="bk-muted">Pick one or more. Each space hosts one event at a time; the outdoor playground can be shared by two.</p>
+          <div id="bkFac" class="pick-list"></div>
         </div>
       </div>
 
@@ -199,6 +213,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               </div>
             </div>
 
+            <div class="bk-row bk-row--1" id="bkEventRow" hidden>
+              <div class="bk-field">
+                <label for="bkEvent">Name of the event</label>
+                <input id="bkEvent" name="event" type="text" maxlength="120" placeholder="e.g. Product launch, alumni dinner"/>
+              </div>
+            </div>
+
             <div class="bk-row bk-row--1">
               <div class="bk-field">
                 <label for="bkHeads">How many people</label>
@@ -260,6 +281,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <input type="hidden" name="form-name" value="room-booking"/>
   <input type="text" name="bot-field"/>
   <input type="text" name="room"/>
+  <input type="text" name="event"/>
   <input type="text" name="date"/>
   <input type="text" name="time"/>
   <input type="text" name="request"/>

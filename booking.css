@@ -402,3 +402,20 @@
   font: 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ink);
   background: var(--bg-soft); border: 1px solid var(--line); border-radius: 10px; white-space: pre; overflow-x: auto;
 }
+
+/* ---------------------------------------------- Event Space (public) -- */
+.bk-room--wide { grid-column: 1 / -1; display: grid; grid-template-columns: 260px 1fr; }
+.bk-room--wide img { height: 100%; min-height: 150px; }
+@media (max-width: 640px) { .bk-room--wide { grid-template-columns: 1fr; } .bk-room--wide img { height: 130px; min-height: 0; } }
+.bk-fac { margin-top: 14px; }
+.bk-fac h4 { font-family: var(--serif); font-size: 19px; font-weight: 400; color: var(--cedar); margin: 0 0 4px; }
+.bk-fac > .bk-muted { margin: 0 0 12px; }
+.bk-fac .pick-sub { grid-column: 1 / -1; margin: 0 0 4px; }
+.bk-fac .pick-sub .pick-list { grid-template-columns: 1fr 1fr; }
+@media (max-width: 620px) { .bk-fac .pick-sub .pick-list { grid-template-columns: 1fr; } }
+
+/* -------------------------------------------- Event Space (console) -- */
+.ev-partner { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 2px 0 14px; padding: 10px 12px; border-radius: 10px; background: rgba(217,119,6,.07); }
+.ev-partner .tk-again { margin: 0; }
+.adm-pill.partner { background: rgba(217,119,6,.14); color: #9a5600; }
+.adm-card .ev-partner { margin: 0 0 12px; }

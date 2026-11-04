@@ -93,9 +93,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             </div>
           </div>
           <div class="adm-roomfilter">
-            <button type="button" data-rf="all"      aria-pressed="true">Both rooms</button>
+            <button type="button" data-rf="all"      aria-pressed="true">Everything</button>
             <button type="button" data-rf="meeting"  aria-pressed="false">Meeting</button>
             <button type="button" data-rf="workshop" aria-pressed="false">Workshop</button>
+            <button type="button" data-rf="event"    aria-pressed="false" id="rfEvent" hidden>Events</button>
           </div>
           <div class="bk-grid" id="admDow"></div>
           <div class="bk-grid" id="admDays"></div>
@@ -126,12 +127,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="bk-row">
           <div class="bk-field">
             <label for="addRoom">Room</label>
-            <select id="addRoom"><option value="meeting">Meeting Room</option><option value="workshop">Workshop Room</option></select>
+            <select id="addRoom"><option value="meeting">Meeting Room</option><option value="workshop">Workshop Room</option><option value="event" id="addRoomEvent" hidden disabled>Event Space</option></select>
           </div>
           <div class="bk-field">
             <label for="addDate">Date</label>
             <input id="addDate" type="date"/>
           </div>
+        </div>
+
+        <div class="bk-field" id="addFacRow" style="margin-bottom:14px;" hidden>
+          <label>Spaces</label>
+          <div class="pick-list" id="addFac"></div>
         </div>
 
         <div class="bk-field" style="margin-bottom:14px;">
@@ -159,6 +165,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               <label for="addOrg">Company <span class="bk-muted">(optional)</span></label>
               <input id="addOrg" type="text" maxlength="120" placeholder="Optional"/>
             </div>
+          </div>
+          <div class="bk-row bk-row--1" id="addEventRow" hidden>
+            <div class="bk-field">
+              <label for="addEvent">Name of the event</label>
+              <input id="addEvent" type="text" maxlength="120" placeholder="e.g. Founders meetup"/>
+            </div>
+          </div>
+          <div class="ev-partner" id="addPartnerRow" hidden>
+            <label class="tk-again"><input type="checkbox" id="addPartner"/> Partnership with MIC</label>
+            <label class="tk-again" id="addFreeRow" hidden><input type="checkbox" id="addFree"/> Free of charge</label>
           </div>
           <div class="bk-row" id="addSetupRow" hidden>
             <div class="bk-field" style="grid-column:1/-1;">

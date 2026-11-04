@@ -27,7 +27,12 @@
   var MAX_VIDEO = 50 * 1024 * 1024;
   var LS_SESSION = 'mic_staff_session', LS_SEEN = 'mic_staff_seen', LS_SAFARI = 'mic_staff_use_safari';
 
-  var ROOMS = { meeting: 'Meeting Room', workshop: 'Workshop Room' };
+  var ROOMS = { meeting: 'Meeting Room', workshop: 'Workshop Room',
+                // Event Space facilities (mic_events_SETUP.sql)
+                ev_cowork: 'Coworking space', ev_workshop: 'Workshop room', ev_play_full: 'Playground (all)',
+                ev_play_part: 'Playground (part)', ev_kitchen: 'Kitchen', ev_coffee: 'Coffee shop' };
+  var EV_ORDER = ['ev_cowork', 'ev_workshop', 'ev_play_full', 'ev_play_part', 'ev_kitchen', 'ev_coffee'];
+  function isEv(room) { return /^ev_/.test(room || ''); }
   var SETUP = { ushape: 'U-shape', classroom: 'Classroom' };
   var CAT = { refreshments: 'Refreshments', coffee_break: 'Coffee break', premium: 'Premium coffee break', meal: 'Meal break' };
 
@@ -246,7 +251,7 @@
     if (!S) return Promise.resolve();
     var today = local(new Date()).ymd;
     var since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-    var bkCols = 'id,request_id,room,booking_date,slot,status,name,org,phone,headcount,setup,catering,catering_people,addons,addons_note,notes,admin_note';
+    var bkCols = '*';
     return Promise.all([
       api('/rest/v1/rpc/is_booking_member', { method: 'POST', body: '{}' }).then(json),
       api('/rest/v1/staff_tasks?select=*&order=created_at.desc&or=' +
@@ -349,8 +354,9 @@
     var spans = merge(rows.map(spanOf).filter(Boolean));
     var today = local(new Date()).ymd, d = rows[0].booking_date;
     var day = d === today ? 'Today' : d === addDays(today, 1) ? 'Tomorrow' : dayName(d, { weekday: 'short', day: 'numeric', month: 'short' });
-    return (ROOMS[rows[0].room] || rows[0].room) + ' · ' + day + ' ' + (spans.length ? hh(spans[0][0]) + '–' + hh(spans[0][1]) : '') +
-           (rows[0].name ? ' · ' + rows[0].name : '');
+    return (isEv(rows[0].room) ? 'Event Space' : (ROOMS[rows[0].room] || rows[0].room)) + ' · ' + day + ' ' +
+           (spans.length ? hh(spans[0][0]) + '–' + hh(spans[0][1]) : '') +
+           ((rows[0].event_name || rows[0].name) ? ' · ' + (rows[0].event_name || rows[0].name) : '');
   }
 
   function taskCard(t) {
@@ -432,15 +438,17 @@
     var now = local(new Date()), nowH = now.h + now.m / 60, today = now.ymd;
     var entries = {};
     bookings.forEach(function (r) {
-      var k = r.booking_date + '|' + r.request_id + '|' + r.room + '|' + r.status;
+      // an event is one entry, however many spaces it uses
+      var k = r.booking_date + '|' + r.request_id + '|' + (isEv(r.room) ? 'event' : r.room) + '|' + r.status;
       (entries[k] = entries[k] || []).push(r);
     });
 
     var byDay = {};
     Object.keys(entries).forEach(function (k) {
       var rows = entries[k], r = rows[0];
+      var spaces = isEv(r.room) ? EV_ORDER.filter(function (c) { return rows.some(function (x) { return x.room === c; }); }) : null;
       merge(rows.map(spanOf).filter(Boolean)).forEach(function (s) {
-        (byDay[r.booking_date] = byDay[r.booking_date] || []).push({ r: r, s: s });
+        (byDay[r.booking_date] = byDay[r.booking_date] || []).push({ r: r, s: s, spaces: spaces });
       });
     });
 
@@ -467,18 +475,21 @@
           ? (s[0] === 8 && s[1] === 20 ? 'Full day' : s[0] === 8 && s[1] === 14 ? 'Morning' : s[0] === 14 && s[1] === 20 ? 'Afternoon' : '')
           : '';
         var t = '<div class="t">' + hh(s[0]) + '–' + hh(s[1]) +
-                '<small>' + esc(ROOMS[r.room] || r.room) + (label ? ' · ' + label : '') + '</small></div>';
+                '<small>' + (e.spaces ? 'Event Space' : esc(ROOMS[r.room] || r.room)) + (label ? ' · ' + label : '') + '</small></div>';
 
         var w;
         if (r.status === 'blocked') {
-          w = '<div class="w"><b>Room closed</b>' +
+          w = '<div class="w"><b>' + (e.spaces ? 'Closed: ' + e.spaces.map(function (c) { return ROOMS[c]; }).join(', ') : 'Room closed') + '</b>' +
               (r.admin_note && r.admin_note !== 'Closed by staff' ? '<small>' + esc(r.admin_note) + '</small>' : '') + '</div>';
         } else {
           var facts = [];
           if (r.headcount) facts.push(esc(r.headcount) + ' people');
           if (r.setup) facts.push(esc(SETUP[r.setup] || r.setup));
           var order = ordered(r);
-          w = '<div class="w">' + esc(r.name || 'Guest') + (r.org ? ' · ' + esc(r.org) : '') +
+          if (e.spaces && r.partnership) tags.push('<span class="st-tag mine">Partnership with MIC</span>');
+          w = '<div class="w">' + (e.spaces && r.event_name ? '<b>' + esc(r.event_name) + '</b> · ' : '') +
+            esc(r.name || 'Guest') + (r.org ? ' · ' + esc(r.org) : '') +
+            (e.spaces ? '<small><b>Spaces:</b> ' + e.spaces.map(function (c) { return esc(ROOMS[c]); }).join(' · ') + '</small>' : '') +
             (facts.length ? '<small>' + facts.join(' · ') + '</small>' : '') +
             (order.length ? '<small><b>Prepare:</b> ' + order.join(' · ') + '</small>' : '') +
             (r.addons_note ? '<small><b>Special order:</b> ' + esc(r.addons_note) + '</small>' : '') +

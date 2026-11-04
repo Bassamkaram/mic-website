@@ -64,13 +64,15 @@ alter table public.room_bookings add constraint room_bookings_capacity check (
   or (room = 'workshop' and setup = 'ushape'    and headcount <= 30)
   or (room = 'workshop' and setup = 'classroom' and headcount <= 40)
   or (room = 'workshop' and setup is null       and headcount <= 40)
+  or room like 'ev\_%'                          -- event facilities, see mic_events_SETUP.sql
 );
 
 -- Slot values must match the room they belong to.
 alter table public.room_bookings drop constraint if exists room_bookings_slot_shape;
+-- (the workshop room by the half-day; every other room and facility by the hour)
 alter table public.room_bookings add constraint room_bookings_slot_shape check (
-  (room = 'meeting'  and slot ~ '^(0[0-9]|1[0-9]|2[0-3])$')
-  or (room = 'workshop' and slot in ('am','pm'))
+  (room = 'workshop' and slot in ('am','pm'))
+  or (room <> 'workshop' and slot ~ '^(0[0-9]|1[0-9]|2[0-3])$')
 );
 
 -- ------------------------------------------------------------ public view --
