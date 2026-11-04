@@ -4,6 +4,12 @@
    not pay for it.
    ============================================================ */
 
+/* The browser's own [hidden] rule is only a UA default, so any author rule
+   that sets display — .bk-row below sets grid — silently overrides it and the
+   element stays on screen with its hidden attribute set. This puts that right
+   for every element on these pages. */
+[hidden] { display: none !important; }
+
 .bk-head {
   background: var(--bg-warm);
   border-bottom: 1px solid var(--line);
